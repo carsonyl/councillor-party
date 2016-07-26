@@ -3,7 +3,7 @@ surrey-council-video-archive
 
 These are Python scripts that download [Surrey City Council video recordings](http://www.surrey.ca/city-government/6993.aspx) 
 and re-uploads them onto YouTube.
-The [Surrey City Council Meetings Auto-Upload channel on YouTube](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw)
+The [Surrey BC City Council Meetings channel on YouTube](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw)
 is automated using these scripts.
 
 This project is maintained by [Carson Lam](https://www.carsonlam.ca) ([@carsonyl](https://twitter.com/carsonyl)).
