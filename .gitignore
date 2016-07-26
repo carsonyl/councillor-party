@@ -1,0 +1,8 @@
+__pycache__/*
+*.exe
+*.mp4
+.cache/*
+.idea/*
+*.concat.txt
+.youtube-upload-credentials.json
+client_id.json
