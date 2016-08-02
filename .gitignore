@@ -3,6 +3,9 @@ __pycache__/*
 *.mp4
 .cache/*
 .idea/*
+segments/*
+videos/*
 *.concat.txt
 .youtube-upload-credentials.json
 client_id.json
+*.tokens.json

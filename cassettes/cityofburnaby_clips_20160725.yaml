@@ -1,0 +1,254 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.10.0]
+    method: GET
+    uri: http://civic.neulion.com/cityofburnaby/
+  response:
+    body: {string: "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n\t<meta charset=\"utf-8\"\
+        >\n\t<title>City of Burnaby</title>\n\n\t<link rel=\"stylesheet\" type=\"\
+        text/css\" href=\"../../static/styles/light-theme/jquery-ui-1.10.3.custom.min.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"../../static/styles/light-theme/jquery-ui-overrides.pc.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"../../static/styles/tablesorter/theme.default.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"../../static/styles/flowplayer.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"../../static/styles/common.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"../../static/styles/main.pc.min.css\"\
+        \ />\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"static/styles/branding.pc.css\"\
+        \ />\n</head>\t\r\n<body onLoad=\"\">\r\n\t<div class=\"main wrapper\">\r\n\
+        \t\t<!-- *****************\r\n\t\t\t\t\tTitle/Menu bar\r\n\t\t*******************\
+        \ -->\r\n\t\t<div id=\"header\" class=\"wrapper generic-unbordered-box\" >\t\
+        \t\r\n\t\r\n\t\t\t<div id=\"searchBoxMainWrapper\" class=\"generic-unbordered-box\"\
+        >\r\n\t\t\t\t<form id=\"searchForm_Main\">\r\n\t\t\t\t\t<!-- Project name\
+        \ to search for -->\r\n\t\t\t\t\t<div id=\"projectsWrapper\" class=\"searchElementWrapper\"\
+        >\r\n\t\t\t\t\t\t<label for=\"projectsSelector\">Meeting:</label>\r\n\t\t\t\
+        \t\t\t<select id=\"projectsSelector\" class=\"searchElement searchInput\"\
+        \ name=\"projectsSelector\">\r\n\t\t\t\t\t\t\t<option value=\"1305\">All Meetings</option>\n\
+        \t\t\t\t\t\t<option value=\"1305\">City Council</option>\n\t\t\t\t\t\t</select>\r\
+        \n\t\t\t\t\t</div>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<!-- Keyword to search for -->\r\
+        \n\t\t\t\t\t<div id=\"keywordWrapper\" class=\"searchElementWrapper\">\r\n\
+        \t\t\t\t\t\t<label for=\"keywordInput\">Keyword Search <span class=\"label-optional\"\
+        >(Optional)</span>:</label>\r\n\t\t\t\t\t\t<input id=\"keywordInput\" class=\"\
+        searchElement searchInput\" type=\"text\" name=\"keyword\" placeholder=\"\"\
+        >\t\t\t\t\t\t\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<!-- Search button,\
+        \ but only for the keyword -->\r\n\t\t\t\t\t<div class=\"searchElementWrapper\"\
+        >\r\n\t\t\t\t\t\t<button id=\"button_keySearch\" class=\"search-button ui-state-default\"\
+        \ type=\"submit\">Search</button>\t\t\t\t\t\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\
+        </form>\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t\t<!-- Any Live Events -->\r\n\t\t\
+        \t<div id=\"liveMeetingsWrapper\" class=\"generic-unbordered-box\">\r\n\t\t\
+        \t\t<!-- \r\n\t\t\t\t<label>Live Meetings:</label>\r\n\t\t\t\t<button class=\"\
+        meeting-button ui-state-default\" title=\"Please refresh page to check for\
+        \ live meetings\" disabled=\"disabled\">No Live Meetings</button>\r\n\t\t\t\
+        \t -->\t\t\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t</div>\r\n\t\t\r\n\t\t<!-- ************************\r\
+        \n\t\t\t\t\tMain Content Area\r\n\t\t***************************** -->\r\n\
+        \t\t<div class=\"content wrapper generic-unbordered-box\">\r\n\t\t\r\n\t\t\
+        \t<!-- Start Left Column -->\r\n\t\t\t<div id=\"leftColumnBox\" class=\"column-box\
+        \ left-column generic-unbordered-box\">\r\n\t\t\t\r\n\t\t\t\t<img id=\"mainLogoImage\"\
+        \ src=\"static/imgs/main-logo.png\"/>\r\n\t\t\t\t<div id=\"videoBox\">\t\t\
+        \t\t  \r\n\t\t\t\t\t<div id=\"adaptivePlayer\">\r\n\t\t\t\t\t<img id=\"playerBackground\"\
+        \ src=\"static/imgs/playerBackground.jpg\"/>  \r\n\t\t\t\t\t</div>\t\t\t\t\
+        \t\r\n\t\t\t\t</div>\r\n\t\t\t\t\r\n\t\t\t\t<!-- The \"details\" box of the\
+        \ video that's playing -->\r\n\t\t\t\t<div id=\"clipDetails\" class=\"bordered-box\"\
+        >\r\n\t\t\t\t\t<div>\r\n\t\t\t\t\t\t<div class=\"clipTitle\" >&nbsp;</div>\r\
+        \n\t\t\t\t\t\t<p class=\"clipLength\">&nbsp;</p>\r\n\t\t\t\t\t</div>\r\n\t\
+        \t\t\t\t<p class=\"clipDescription\">&nbsp;</p>\r\n\t\t\t\t\t<div class=\"\
+        clipCreationDate\">&nbsp;</div>\r\n\t\t\t\t\t\r\n\t\t\t\t<!--  \t\r\n\t\t\t\
+        \t\t<div id=\"getEmbedUrl\"><button style=\"width:70px; font-size:12px; color:black;\
+        \ align:left\" class=\"clipId\">Embed</button></div>\r\n\t\t\t\t\t<div id=\"\
+        embedUrl\"></div>\r\n\t\t\t\t-->\r\n\t\t\t\t\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\
+        \n\t\t\t<!-- End Left Column -->\r\n\t\t\t\r\n\t\t\t<!-- Start Right Column\
+        \ -->\r\n\t\t\t<div id=\"rightColumnBox\" class=\"column-box right-column\
+        \ generic-unbordered-box\">\r\n\t\t\t\t\t\t\t\t<span class=\"info-text\" style=\"\
+        margin-bottom: 5px;\">Please note: To view archives before the 24th of August,\
+        \ 2015, please <a href=\"http://cityofburnaby.insinc.com/player_archive.php\"\
+        \ target=\"_blank\">click here</a></span>\t\r\n\t\t\t\t\t\t\t\t<!-- JQueryUI\
+        \ Calendar -->\r\n\t\t\t\t<div id=\"calendarBox\">\r\n\t\t\t\t\t<div id=\"\
+        calendarDiv\"></div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<!-- Clips table -->\r\n\
+        \t\t\t\t<div id=\"clipsBox\" class=\"generic-unbordered-box hidden-table\"\
+        >\r\n\t\t\t\t\t<div id=\"clipsTableContainer\">\r\n\t\t\t\t\t\t<table id=\"\
+        clipsTable\" class=\"tablesorter\">\r\n\t\t\t\t\t\t<thead></thead>\r\n\t\t\
+        \t\t\t\t<tbody>\r\n\t\t\t\t\t\t</tbody>\r\n\t\t\t\t\t\t</table>\r\n\t\t\t\t\
+        \t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<!-- Social widgets, if any -->\r\n\t\
+        \t\t\t<div id=\"socialBox\" class=\"generic-unbordered-box\">\r\n\t\t\t\t\t\
+        <a class=\"twitter-timeline\" data-chrome=\"noheader nofooter transparent\"\
+        \ href=\"https://twitter.com/CityofBurnaby\" data-widget-id=\"644927314308927489\"\
+        >Tweets by @CityofBurnaby</a>\n<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+\"\
+        ://platform.twitter.com/widgets.js\";fjs.parentNode.insertBefore(js,fjs);}}(document,\"\
+        script\",\"twitter-wjs\");</script>\n          \t\t\t\t</div>\r\n\t\t\t\t\r\
+        \n\t\t\t\t\r\n\t\t\t</div><!-- End Right Column -->\r\n\t\t\t\r\n\t\t</div><!--\
+        \ Content Wrapper End -->\r\n\t</div>\n\t<div id=\"footer\">\n\t\t<a href=\"\
+        http://www.neulion.com\" target=\"_blank\">\n\t\t\t<img src=\"../../static/imgs/poweredbynl.gif\"\
+        />\n\t\t</a>\n\t\t<span class=\"footerText\">&copy; 2016 Neulion.  All Rights\
+        \ Reserved.</span>\n\t</div>\n\t<!-- \n\t\n\t\tOverlays\n\t\t\n\t-->\n\t<div\
+        \ id=\"progressOverlay\" class=\"disabled overlay\">\n\t\t<div class=\"centered-dialog\"\
+        >\n\t\t\t<div id=\"loadingBar\" class=\"centered-dialog-content\"><div class=\"\
+        progress-label\">Loading...</div></div>\n\t\t</div>\n\t</div>\n\t\n\t<div\
+        \ id=\"infoOverlay\" class=\"disabled overlay\">\n\t\t<div class=\"centered-dialog\"\
+        >\n\t\t\t<div class=\"title-bar\">Title</div>\n\t\t\t<div class=\"centered-dialog-content\"\
+        >\n\t\t\t\t<div class=\"progress-label\">Loading...</div>\n\t\t\t</div>\n\t\
+        \t\t<div class=\"button-bar\">\n\t\t\t\t<button class=\"ui-state-default border-radius-all\"\
+        >OK</button>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<!-- \n\t\n\t\tEnd Overlays\n\
+        \t\t\n\t-->\n\t<!-- \n\t\n\t\tScript imports here \n\t\n\t\t-->\n\t<!-- Script\
+        \ imports -->\n\t<!-- <script src=\"../../static/scripts/vendor/jquery/jquery-1.11.1.min.js\"\
+        ></script> -->\n\t<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/vendor/jquery/jquery-ui.min.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/vendor/jstz-1.0.4.min.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/player.js\"></script>\n\t\
+        <script src=\"../../static/scripts/vendor/tablesorter/jquery.tablesorter.min.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/vendor/momentjs/moment.min.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/vendor/momentjs/moment-timezone-with-data.min.js\"\
+        ></script>\n\n\t<script src=\"../../static/scripts/vendor/tablesorter/widgets/widget-scroller.js\"\
+        ></script>\n\t<script src=\"../../static/scripts/vendor/swfobject.js\"></script>\n\
+        \n\t<script src=\"../../static/scripts/civic/global.funcs.js\"></script>\t\
+        \n\t\n\t<script>\n\t  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n\
+        \t  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n\
+        \t  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n\
+        \t  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\
+        \t\n\t  ga('create', 'UA-62896331-1', 'auto');\n\t  ga('send', 'pageview');\n\
+        \t</script>\n\t<!-- \r\n\t\r\n\t\tInitializing global variables and then the\
+        \ loadup script \r\n\t\t\r\n\t-->\r\n\t<script>\r\n\t\t$(function() {\r\n\t\
+        \t\t/**\r\n\t\t\t * Global & QoS var inits\r\n\t\t\t **/\r\n\t\t\tGLOBAL.isMobileSite\
+        \ = false;\r\n\t\t\tGLOBAL.isMobileDvc = false;\r\n\t\t\tGLOBAL.device = \"\
+        desktop\";\r\n\t\t\tGLOBAL.customersList = [\"City of Burnaby\"]; // Autocomplete\
+        \ Box\r\n\t\t\tGLOBAL.custIds = {\"City of Burnaby\" : \"343\"};\r\n\t\t\t\
+        GLOBAL.userTZ = encodeURIComponent(jstz.determine().name());\r\n\t\t\tQOS.product\
+        \ = \"City of Burnaby\";\r\n\t\t\t\r\n\t\t\tSEARCH_VARS.allowedDates = [\"\
+        2015-08-24\",\"2015-09-14\",\"2015-09-28\",\"2015-10-05\",\"2015-10-26\",\"\
+        2015-11-09\",\"2015-11-23\",\"2015-12-07\",\"2015-12-14\",\"2016-01-18\",\"\
+        2016-01-25\",\"2016-02-01\",\"2016-02-15\",\"2016-02-22\",\"2016-03-07\",\"\
+        2016-03-21\",\"2016-04-04\",\"2016-04-11\",\"2016-04-25\",\"2016-05-09\",\"\
+        2016-05-16\",\"2016-05-30\",\"2016-06-13\",\"2016-06-20\",\"2016-06-27\",\"\
+        2016-07-11\",\"2016-07-25\"];\r\n\r\n\r\n\t\t\t/**\r\n\t\t\t * Config values.\
+        \ These need to be set before any initialization functions.\r\n\t\t\t */\r\
+        \n\t\t\t \r\n\t\t\t// Height of any optional widgets on right column. This\
+        \ value is used in calculations to maximize clip table height (for larger\
+        \ screens, etc)\r\n\t\t\tCONFIG.rightColWidgetHeight = 350; \r\n\t\t\t\r\n\
+        \t\t\t/**\r\n\t\t\t * Initialize stuff\r\n\t\t\t **/\r\n\t\t\tVIDEO_PLAYER.setupPlayer();\
+        \  //Adaptive player init\r\n\t\t\t//Deeplinked clip. If there is no clip,\
+        \ this will be null.\r\n\t\t\tGLOBAL.deepLinkClip = null;\r\n\t\t\t//Set any\
+        \ active live events\r\n\t\t\tGLOBAL.liveEvents = null;\r\n\t\t\tGLOBAL.upcomingEvents\
+        \ = null;\r\n\t\t});\r\n\t</script>\r\n\t<script src=\"../../static/scripts/civic/init.js\"\
+        ></script>\r\n</body>\r\n</html>"}
+    headers:
+      Cache-control: [private]
+      Connection: [close]
+      Content-Type: [text/html; charset=UTF-8]
+      Date: ['Sat, 30 Jul 2016 22:43:26 GMT']
+      Server: [Apache/2.2.15 (CentOS)]
+      Set-Cookie: [SERVERID=server1; path=/]
+      X-Powered-By: [PHP/5.3.3]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Cookie: [SERVERID=server1]
+      User-Agent: [python-requests/2.10.0]
+    method: GET
+    uri: http://civic.neulion.com/api/clipmanager.php?prid=1305&f=getClips&device=desktop&proj_from=2016-07-25&tz=America%2FLos_Angeles
+  response:
+    body: {string: "\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726020201_014407.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Entire Council Meeting</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\"\
+        \ value=\"0\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\
+        \">\n\t\t\t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26\
+        \ 01:58:00\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"\
+        1305\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,000\"\
+        >\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25\
+        \ 18:58:00 PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t01:44:07\n\
+        \t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726020202_000013.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Call to Order</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"\
+        1\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\
+        \t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,001\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:00:13\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726020223_000200.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Proclamation</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"\
+        2\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\
+        \t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,002\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:02:00\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726020426_000011.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Minutes</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"3\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\t\t\
+        <input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,003\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:00:11\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726020438_002137.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Delegations & Manager's Report Item 2</a>\n\t\t\t\t<input type=\"hidden\"\
+        \ name=\"clip_rank\" value=\"4\">\n\t\t\t\t<input type=\"hidden\" name=\"\
+        clip_descr\" value=\"\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_start_utc\"\
+        \ value=\"2016-07-26 01:58:00\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\"\
+        \ value=\"1305\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"\
+        3494712,004\">\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\"\
+        \ title=\"2016-07-25 18:58:00 PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t\
+        <td>\n\t\t\t\t00:21:37\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\
+        \t\t<a href=\"javascript:void(0);\" onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726022625_000017.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Correspondence</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"\
+        5\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\
+        \t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,005\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:00:17\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726022642_010607.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Reports</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"6\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\t\t\
+        <input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,006\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t01:06:07\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726033250_000119.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Bylaws</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"7\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\t\t\
+        <input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,007\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:01:19\n\t\t\t\
+        </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726033409_001149.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >New Business/Inquiries</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\"\
+        \ value=\"8\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\
+        \">\n\t\t\t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26\
+        \ 01:58:00\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"\
+        1305\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,008\"\
+        >\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25\
+        \ 18:58:00 PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:11:49\n\
+        \t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t\t<a href=\"javascript:void(0);\"\
+        \ onclick=\"CLIP_VIEWER.initClip('adaptive://nlds2.insinc.neulion.com:443/nlds/cacivic/cityofburnaby1/as/live/cityofburnaby1_hd_pc_20160726034558_000010.mp4',false,$(this).closest('table'),$(this).closest('td').parent()[0].sectionRowIndex);\"\
+        >Adjournment</a>\n\t\t\t\t<input type=\"hidden\" name=\"clip_rank\" value=\"\
+        9\">\n\t\t\t\t<input type=\"hidden\" name=\"clip_descr\" value=\"\">\n\t\t\
+        \t\t<input type=\"hidden\" name=\"clip_start_utc\" value=\"2016-07-26 01:58:00\"\
+        >\n\t\t\t\t<input type=\"hidden\" name=\"clip_project\" value=\"1305\">\n\t\
+        \t\t\t<input type=\"hidden\" name=\"clip_id\" value=\"3494712,009\">\n\t\t\
+        \t</td>\n\t\t\t<td>\n\t\t\t\t<div class=\"tableData\" title=\"2016-07-25 18:58:00\
+        \ PDT\">2016-07-25</div>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t\t00:00:10\n\t\t\t\
+        </td>\n\t\t</tr> "}
+    headers:
+      Connection: [close]
+      Content-Length: ['7502']
+      Content-Type: [text/html; charset=UTF-8]
+      Date: ['Sat, 30 Jul 2016 22:43:26 GMT']
+      Server: [Apache/2.2.15 (CentOS)]
+      X-Powered-By: [PHP/5.3.3]
+    status: {code: 200, message: OK}
+version: 1
