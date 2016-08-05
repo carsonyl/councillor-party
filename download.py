@@ -18,6 +18,12 @@ from neulion import adaptive_url_to_segment_urls, NeulionScraperApi, group_video
 log = logging.getLogger()
 
 
+class MissingSegmentError(ValueError):
+    def __init__(self, clip_url):
+        super(MissingSegmentError, self).__init__()
+        self.clip_url = clip_url
+
+
 def download_segment(session, clip_url, dest):
     resp = session.get(clip_url, stream=True)
     resp.raise_for_status()
@@ -26,7 +32,7 @@ def download_segment(session, clip_url, dest):
             outvid.write(chunk)
     if not os.path.getsize(dest):
         os.remove(dest)
-        log.warning("{} is empty".format(clip_url))
+        raise MissingSegmentError(clip_url)
 
 
 def download_clip(adaptive_url, destination):
@@ -39,8 +45,9 @@ def download_clip(adaptive_url, destination):
 
     session = Session()
     with ThreadPoolExecutor(max_workers=8) as executor:
+    num_skipped_because_already_exists, num_missing_segments = 0, 0
         futures = []
-        num_skipped_because_already_exists = 0
+
         for segment_url in adaptive_url_to_segment_urls(adaptive_url):
             filename = ''.join(segment_url.split('/')[-3:])
             dest = os.path.join(destination, filename)
@@ -53,14 +60,23 @@ def download_clip(adaptive_url, destination):
             futures.append(future)
 
         print("{} segments were previously downloaded".format(num_skipped_because_already_exists))
-        with tqdm(total=num_skipped_because_already_exists + len(futures), dynamic_ncols=True) as progressbar:
-            progressbar.update(num_skipped_because_already_exists)
+        progressbar = tqdm(total=num_skipped_because_already_exists + len(futures),
+                           initial=num_skipped_because_already_exists, dynamic_ncols=True)
+        with open(os.path.join(destination, '_missing_segments.txt'), 'w') as missing_segments:
             for future in as_completed(futures):
-                future.result()
+                try:
+                    future.result()
+                except MissingSegmentError as e:
+                    missing_segments.write(e.clip_url + '\n')
+                    num_missing_segments += 1
                 progressbar.update()
+        progressbar.close()
 
-        total_size = sum(os.path.getsize(os.path.join(destination, f)) for f in os.listdir(destination))
-        print("Downloaded {} MB".format(total_size/1024/1024))
+    if num_missing_segments:
+        log.warning("{} segments were empty and omitted".format(num_missing_segments))
+
+    total_size = sum(os.path.getsize(os.path.join(destination, f)) for f in os.listdir(destination))
+    print("Downloaded {} MB".format(total_size / 1024 / 1024))
 
 
 def write_ffmpeg_concat_file(segments_dir):
