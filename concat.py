@@ -28,6 +28,9 @@ def write_ffmpeg_concat_file(segments_dir):
             # Linux ffmpeg needs paths relative to the concat file.
             segment_path = os.path.join(segments_dir, filename) if os.name == 'nt' else filename
             concat_file.write("file '{}'\n".format(segment_path))
+            # Be explicit about duration instead of letting ffmpeg infer it.
+            # Otherwise, error accumulates and video lengthens over time.
+            concat_file.write("duration 2\n")
     if os.path.isfile(concat_file_path):
         os.remove(concat_file_path)
     os.rename(tmp_out, concat_file_path)
