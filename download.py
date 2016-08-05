@@ -35,7 +35,7 @@ def download_segment(session, clip_url, dest):
         raise MissingSegmentError(clip_url)
 
 
-def download_clip(adaptive_url, destination):
+def download_clip(adaptive_url, destination, workers):
     if not os.path.isdir(destination):
         raise ValueError("destination must be directory")
 
@@ -44,8 +44,8 @@ def download_clip(adaptive_url, destination):
         os.remove(os.path.join(destination, trailing_file))
 
     session = Session()
-    with ThreadPoolExecutor(max_workers=8) as executor:
     num_skipped_because_already_exists, num_missing_segments = 0, 0
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = []
 
         for segment_url in adaptive_url_to_segment_urls(adaptive_url):
@@ -121,6 +121,7 @@ parser = argparse.ArgumentParser(description='Download the video segments for vi
 parser.add_argument('config_id', help='ID of the config document to use from config.yaml.')
 parser.add_argument('date', help='Download video segments for videos on this date (YYYY-MM-DD) in local time.')
 parser.add_argument('--title-contains', help='Only download video segments for clips that contain this in its title.')
+parser.add_argument('--workers', type=int, default=8, help='Max number of concurrent downloads.')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -142,5 +143,5 @@ if __name__ == '__main__':
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         write_video_metadata(config, root_clip, timecodes, os.path.join(outdir, '_metadata.yaml'))
-        download_clip(root_clip.url, outdir)
+        download_clip(root_clip.url, outdir, args.workers)
         write_ffmpeg_concat_file(outdir)
