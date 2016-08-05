@@ -34,6 +34,7 @@ def write_ffmpeg_concat_file(segments_dir):
     return concat_file_path
 
 
+def ffmpeg_concat(concat_file, video_out, mono, loglevel):
     # http://stackoverflow.com/questions/7333232/concatenate-two-mp4-files-using-ffmpeg
     # http://superuser.com/questions/924364/ffmpeg-how-to-convert-stereo-to-mono-using-audio-pan-filter
     print("Concatenating videos listed in {} to {}".format(concat_file, video_out))
@@ -91,6 +92,7 @@ parser.add_argument('--monitor', action="store_true",
                     help='Continuously look for clip segments ready to be concatenated.')
 parser.add_argument('--keep-inputs', action="store_true",
                     help="Don't delete segments directory after concatenating it into a video.")
+parser.add_argument('--ffmpeg-log-level', default='error')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -113,7 +115,7 @@ if __name__ == '__main__':
 
             concat_file = write_ffmpeg_concat_file(segment_dir_path)
             video_out = os.path.join('videos', segment_dir + '.mp4')
-            ffmpeg_concat(concat_file, video_out, audio_mono)
+            ffmpeg_concat(concat_file, video_out, audio_mono, args.ffmpeg_log_level)
             print("Finished concatenating " + video_out)
 
             concat_duration = ffmpeg_duration(video_out)
