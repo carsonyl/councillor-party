@@ -32,6 +32,11 @@ def download_segment(session, clip_url, dest):
 def download_clip(adaptive_url, destination):
     if not os.path.isdir(destination):
         raise ValueError("destination must be directory")
+
+    for trailing_file in sorted(filter(lambda filename: filename.endswith('.mp4'), os.listdir(destination)))[-workers:]:
+        print("Deleting potentially incomplete segment {}".format(trailing_file))
+        os.remove(os.path.join(destination, trailing_file))
+
     session = Session()
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = []
