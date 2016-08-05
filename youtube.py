@@ -169,6 +169,7 @@ class YoutubeSession(OAuth2Session):
                 video.seek(seek_to)
                 progress = tqdm(total=video_size, initial=seek_to, unit_scale=True, dynamic_ncols=True)
                 resp = session.put(session_url, data=chunked_read(video, chunk_size, progress), headers=headers)
+                progress.close()
                 if resp.status_code in (500, 502, 503, 504):
                     seek_to, retry_after = resumable_upload_status(session, session_url, video_path)
                     print("Failed after {}/{}. Retrying in {} seconds".format(seek_to, video_size, retry_after))
@@ -295,7 +296,7 @@ if __name__ == '__main__':
             if for_date and for_date != video_ts.date():
                 continue
 
-            max_retries = 3
+            max_retries = 6
             video_id = None
             for i in range(max_retries):
                 try:
@@ -306,7 +307,8 @@ if __name__ == '__main__':
                         raise
                     if e.response.status_code == 410:
                         print(e)
-                        print("Reattempt {} after unresumable failure".format(i))
+                        print("Reattempt {} after unresumable failure. Sleeping before retry...".format(i+1))
+                        time.sleep(60)
                         continue
                     raise
 
