@@ -79,24 +79,6 @@ def download_clip(adaptive_url, destination, workers):
     print("Downloaded {} MB".format(total_size / 1024 / 1024))
 
 
-def write_ffmpeg_concat_file(segments_dir):
-    concat_file_path = os.path.join(segments_dir, '_concat.txt')
-    print("Writing ffmpeg concat file to " + concat_file_path)
-    tmp_out = concat_file_path + '.tmp'
-    with open(tmp_out, 'w') as concat_file:
-        for filename in sorted(os.listdir(segments_dir)):
-            if filename[0] == '_':
-                continue
-            # Windows ffmpeg needs paths relative to ffmpeg binary.
-            # Linux ffmpeg needs paths relative to the concat file.
-            segment_path = os.path.join(segments_dir, filename) if os.name == 'nt' else filename
-            concat_file.write("file '{}'\n".format(segment_path))
-    if os.path.isfile(concat_file_path):
-        os.remove(concat_file_path)
-    os.rename(tmp_out, concat_file_path)
-    return concat_file_path
-
-
 def write_video_metadata(config, clip_info, timecodes, out_file):
     print("Writing video metadata to " + out_file)
     start_ts, end_ts, duration = parse_time_range_from_url(clip_info.url)
@@ -144,4 +126,6 @@ if __name__ == '__main__':
             os.makedirs(outdir)
         write_video_metadata(config, root_clip, timecodes, os.path.join(outdir, '_metadata.yaml'))
         download_clip(root_clip.url, outdir, args.workers)
-        write_ffmpeg_concat_file(outdir)
+
+        with open(os.path.join(outdir, '_done.txt'), 'w') as f:
+            f.write('yes')

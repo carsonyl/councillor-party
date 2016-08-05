@@ -4,20 +4,36 @@ Script and functions for concatenating downloaded video segments using ffmpeg.
 import argparse
 import codecs
 import os
+import shutil
 import subprocess
-
 import time
 import yaml
 from datetime import timedelta
 from yaml import safe_load
-
-import shutil
 
 from config import get_config
 from neulion import duration_to_timecode, timecode_to_duration
 
 
 def ffmpeg_concat(concat_file, video_out, mono, loglevel='error'):
+def write_ffmpeg_concat_file(segments_dir):
+    concat_file_path = os.path.join(segments_dir, '_concat.txt')
+    print("Writing ffmpeg concat file to " + concat_file_path)
+    tmp_out = concat_file_path + '.tmp'
+    with open(tmp_out, 'w') as concat_file:
+        for filename in sorted(os.listdir(segments_dir)):
+            if filename[0] == '_':
+                continue
+            # Windows ffmpeg needs paths relative to ffmpeg binary.
+            # Linux ffmpeg needs paths relative to the concat file.
+            segment_path = os.path.join(segments_dir, filename) if os.name == 'nt' else filename
+            concat_file.write("file '{}'\n".format(segment_path))
+    if os.path.isfile(concat_file_path):
+        os.remove(concat_file_path)
+    os.rename(tmp_out, concat_file_path)
+    return concat_file_path
+
+
     # http://stackoverflow.com/questions/7333232/concatenate-two-mp4-files-using-ffmpeg
     # http://superuser.com/questions/924364/ffmpeg-how-to-convert-stereo-to-mono-using-audio-pan-filter
     print("Concatenating videos listed in {} to {}".format(concat_file, video_out))
@@ -85,16 +101,17 @@ if __name__ == '__main__':
         for segment_dir in sorted(os.listdir('segments')):
             if args.dir_name_contains and args.dir_name_contains not in segment_dir:
                 continue
-            concat_file = os.path.join('segments', segment_dir, '_concat.txt')
-            if not os.path.isfile(concat_file):
+            segment_dir_path = os.path.join('segments', segment_dir)
+            if not os.path.exists(os.path.join(segment_dir_path, '_done.txt')):
                 print("{} is not yet complete".format(segment_dir))
                 continue
-            metadata_path = os.path.join('segments', segment_dir, '_metadata.yaml')
+            metadata_path = os.path.join(segment_dir_path, '_metadata.yaml')
             with open(metadata_path) as inf:
                 metadata = safe_load(inf)
             config = get_config(metadata['config_id'])
             audio_mono = config.get('audio_mono', False)
 
+            concat_file = write_ffmpeg_concat_file(segment_dir_path)
             video_out = os.path.join('videos', segment_dir + '.mp4')
             ffmpeg_concat(concat_file, video_out, audio_mono)
             print("Finished concatenating " + video_out)
@@ -112,7 +129,7 @@ if __name__ == '__main__':
 
             if not args.keep_inputs:
                 print("Deleting segments directory " + os.path.join('segments', segment_dir))
-                shutil.rmtree(os.path.join('segments', segment_dir))
+                shutil.rmtree(segment_dir_path)
 
         if args.monitor:
             time.sleep(10)
