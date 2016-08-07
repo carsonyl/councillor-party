@@ -132,7 +132,7 @@ if __name__ == '__main__':
                 )
                 num_missing_seconds = adjust_timecodes_for_missing_segments(start_ts, missing_segment_timestamps,
                                                                             metadata['timecodes'])
-            metadata['num_missing_seconds'] = num_missing_seconds
+            metadata['missing_seconds'] = num_missing_seconds
 
             concat_file = write_ffmpeg_concat_file(segment_dir_path)
             video_out = os.path.join('videos', segment_dir + '.mp4')

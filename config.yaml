@@ -9,14 +9,11 @@ youtube:
 
 
     Meeting minutes: {minutes_url}
-
-
-    This is an automated re-upload of video from http://www.surrey.ca/city-government/6993.aspx.
   location: [49.191307, -122.848743]
   location_desc: Surrey City Hall, Surrey, BC, Canada
   playlist: '{clip_date:%Y-%m-%d} Surrey BC City Council Meeting'
   tags: [surrey, bc, canada, city council meeting]
-  privacy: unlisted
+  privacy: public
   notify_subscribers: false
 audio_mono: true
 ---
@@ -26,11 +23,8 @@ youtube:
   title: Burnaby City Council Meeting, {clip_date:%Y-%m-%d}
   desc:
     Burnaby City Council Meeting on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
-    Burnaby City Council in British Columbia, Canada.
 
     {timecodes}
-
-    This is an automated re-upload.
   playlist: '{clip_date:%Y-%m} Burnaby BC City Council Meetings'
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public

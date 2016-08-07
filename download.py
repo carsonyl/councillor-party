@@ -78,7 +78,7 @@ def download_clip(adaptive_url, destination, workers):
         log.warning("{} segments were empty and omitted".format(num_missing_segments))
 
     total_size = sum(os.path.getsize(os.path.join(destination, f)) for f in os.listdir(destination))
-    print("Downloaded {} MB".format(total_size / 1024 / 1024))
+    print("Downloaded {:.1f} MB".format(total_size / 1024 / 1024))
 
 
 def write_video_metadata(config, clip_info, timecodes, out_file):
@@ -103,31 +103,32 @@ def write_video_metadata(config, clip_info, timecodes, out_file):
 
 parser = argparse.ArgumentParser(description='Download the video segments for video clips.')
 parser.add_argument('config_id', help='ID of the config document to use from config.yaml.')
-parser.add_argument('date', help='Download video segments for videos on this date (YYYY-MM-DD) in local time.')
+parser.add_argument('dates', help='Download video segments for videos on this date (YYYY-MM-DD) in local time.')
 parser.add_argument('--title-contains', help='Only download video segments for clips that contain this in its title.')
 parser.add_argument('--workers', type=int, default=8, help='Max number of concurrent downloads.')
 
 if __name__ == '__main__':
     args = parser.parse_args()
     config = get_config(args.config_id)
-    date = datetime.strptime(args.date, '%Y-%m-%d')
+    dates = [datetime.strptime(date, '%Y-%m-%d') for date in args.dates.split(',')]
 
     api = NeulionScraperApi(config['url'])
     all_projects = next(api.projects())
-    clips = list(api.clips(date, all_projects.id))
-    clip_groups = group_video_clips(clips)
-    for root_clip, subclips in clip_groups.items():
-        if args.title_contains and args.title_contains not in root_clip.name:
-            continue
-        print("Working on {}".format(root_clip.name))
-        timecodes = calculate_timecodes(root_clip, subclips)
-        local_time = root_clip.start_utc.astimezone(get_tz(config))
-        segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], local_time, root_clip.id.replace(',', '.'))
-        outdir = os.path.join('segments', segments_dir)
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
-        write_video_metadata(config, root_clip, timecodes, os.path.join(outdir, '_metadata.yaml'))
-        download_clip(root_clip.url, outdir, args.workers)
+    for date in dates:
+        clips = list(api.clips(date, all_projects.id))
+        clip_groups = group_video_clips(clips)
+        for root_clip, subclips in clip_groups.items():
+            if args.title_contains and args.title_contains not in root_clip.name:
+                continue
+            print("Working on {}".format(root_clip.name))
+            timecodes = calculate_timecodes(root_clip, subclips)
+            local_time = root_clip.start_utc.astimezone(get_tz(config))
+            segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], local_time, root_clip.id.replace(',', '.'))
+            outdir = os.path.join('segments', segments_dir)
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
+            write_video_metadata(config, root_clip, timecodes, os.path.join(outdir, '_metadata.yaml'))
+            download_clip(root_clip.url, outdir, args.workers)
 
-        with open(os.path.join(outdir, '_done.txt'), 'w') as f:
-            f.write('yes')
+            with open(os.path.join(outdir, '_done.txt'), 'w') as f:
+                f.write('yes')

@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import pytz
+import requests
 import yaml
 import time
 from datetime import datetime
@@ -39,9 +40,11 @@ def get_minutes_url(config, metadata):
             meeting_type = 'SRC'
         else:
             return 'N/A'
-        if start_date.day in (2, 9) and start_date.month == 5 and start_date.year == 2016 and meeting_type == 'RCPH':
-            return 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_RCPH_2016_05_02_and_09.pdf'
-        return 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_{}_{:%Y_%m_%d}.pdf'.format(meeting_type, start_date)
+        mins = 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_{}_{:%Y_%m_%d}.pdf'.format(meeting_type, start_date)
+        if (start_date.year, start_date.month, start_date.day) in [(2016, 5, 2), (2016, 5, 9)]:
+            mins = 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_RCPH_2016_05_02_and_09.pdf'
+        requests.head(mins).raise_for_status()
+        return mins
     return 'N/A'
 
 
@@ -63,7 +66,7 @@ def build_youtube_video_resource(config, metadata):
     }
     timecodes = "\n".join('{entry[time]} - {entry[title]}'.format(entry=entry) for entry in metadata['timecodes'])
     if timecodes:
-        timecodes = "\n" + timecodes + "\n"
+        timecodes = "\n" + timecodes
     kwargs['timecodes'] = timecodes
 
     recordingDetails = {
@@ -80,10 +83,16 @@ def build_youtube_video_resource(config, metadata):
     if locationDesc:
         recordingDetails['locationDescription'] = locationDesc
 
+    description = ytconfig['desc'].format(**kwargs).rstrip()
+    description += "\n\nThis is an automated re-upload."
+    missing_seconds = metadata['missing_seconds']
+    if missing_seconds:
+        description += " Due to technical difficulties, this video is missing {} seconds.".format(missing_seconds)
+
     return {
         'snippet': {
             'title': ytconfig['title'].format(**kwargs),
-            'description': ytconfig['desc'].format(**kwargs),
+            'description': description,
             'tags': ytconfig.get('tags', []),
             'categoryId': 25,  # News & Politics
             'defaultLanguage': 'en',
