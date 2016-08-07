@@ -4,6 +4,7 @@ from collections import OrderedDict
 from vcr import VCR
 from datetime import datetime, date, timedelta
 
+from concat import adjust_timecodes_for_missing_segments
 from config import get_config, get_all_configs
 from neulion import NeulionScraperApi, parse_time_range_from_url, group_video_clips, calculate_timecodes, \
     adaptive_url_to_segment_urls
@@ -133,3 +134,16 @@ def test_load_all_configs():
 def test_load_config():
     config = get_config('surrey')
     assert 'youtube' in config
+
+
+def test_adjust_timecodes_for_missing_segments():
+    start_ts = datetime(2016, 1, 1, 8, 0)
+    missing_ts = [datetime(2016, 1, 1, 8, 1, 30)]
+    timecodes = [
+        {'time': '00:01:00'},
+        {'time': '00:02:00'},
+    ]
+    num_missed_seconds = adjust_timecodes_for_missing_segments(start_ts, missing_ts, timecodes)
+    assert num_missed_seconds == 2
+    assert timecodes[0]['time'] == '00:01:00'
+    assert timecodes[1]['time'] == '00:01:58'

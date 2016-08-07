@@ -13,9 +13,10 @@ from tqdm import tqdm
 
 from config import get_config, get_tz
 from neulion import adaptive_url_to_segment_urls, NeulionScraperApi, group_video_clips, calculate_timecodes, \
-    parse_time_range_from_url, duration_to_timecode
+    parse_time_range_from_url, duration_to_timecode, segment_url_to_timestamp
 
 log = logging.getLogger()
+SEGMENT_FILE_PATTERN = '%Y%m%d%H%M%S.mp4'
 
 
 class MissingSegmentError(ValueError):
@@ -49,7 +50,8 @@ def download_clip(adaptive_url, destination, workers):
         futures = []
 
         for segment_url in adaptive_url_to_segment_urls(adaptive_url):
-            filename = ''.join(segment_url.split('/')[-3:])
+            timestamp = segment_url_to_timestamp(segment_url)
+            filename = timestamp.strftime(SEGMENT_FILE_PATTERN)
             dest = os.path.join(destination, filename)
             if os.path.exists(dest) and os.path.getsize(dest):
                 # print("{} Already exists - skipping".format(dest))

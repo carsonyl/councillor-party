@@ -207,3 +207,7 @@ def adaptive_url_to_segment_urls(adaptive_url):
     while current_time < end_ts:
         yield '{}/{:%Y%m%d/%H/%M%S}.mp4'.format(url, current_time)
         current_time += clip_length
+
+
+def segment_url_to_timestamp(segment_url):
+    return datetime.strptime(''.join(segment_url.split('/')[-3:])[:-4], '%Y%m%d%H%M%S')
