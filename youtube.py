@@ -31,24 +31,34 @@ def parse_timestamp_naively(ts):
 def get_minutes_url(config, metadata):
     title = metadata['title']
     start_date = parse_timestamp_naively(metadata['start']).astimezone(get_tz(config))
+    meeting_type = None
+    for key, value in config.get('minutes_abbrs', {}).items():
+        if key in metadata[config['minutes_abbrs_for']]:
+            meeting_type = value
+            break
+
     if config['id'] == 'surrey':
-        if 'RCPH' in title:
-            meeting_type = 'RCPH'
-        elif '(' in title and ')' in title:
+        if '(' in title and ')' in title:
             meeting_type = title[title.find('(') + 1: title.find(')')]
-        elif 'Special Regular Council' in title:
-            meeting_type = 'SRC'
-        else:
+        elif not meeting_type:
             return 'N/A'
         mins = 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_{}_{:%Y_%m_%d}.pdf'.format(meeting_type, start_date)
-        if (start_date.year, start_date.month, start_date.day) in [(2016, 5, 2), (2016, 5, 9)]:
-            mins = 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_RCPH_2016_05_02_and_09.pdf'
         requests.head(mins).raise_for_status()
         return mins
+    elif config['id'] == 'vancouver':
+        if not meeting_type:
+            return 'N/A'
+        if metadata['title'] == 'Inaugural Council Meeting':
+            meeting_type = 'inau'
+        mins = 'http://council.vancouver.ca/{dt:%Y%m%d}/{type}{dt:%Y%m%d}ag.htm'.format(
+            type=meeting_type, dt=start_date)
+        requests.head(mins).raise_for_status()
+        return mins
+
     return 'N/A'
 
 
-def build_youtube_video_resource(config, metadata):
+def build_youtube_video_resource(config, metadata, minutes_url):
     """
     Build a YouTube video resource as per https://developers.google.com/youtube/v3/docs/videos.
 
@@ -59,10 +69,17 @@ def build_youtube_video_resource(config, metadata):
     ytconfig = config['youtube']
     ts = parse_timestamp_naively(metadata['start'])
 
+    title_no_date = metadata['title']
+    if title_no_date[-4:].isdigit():
+        title_no_date = title_no_date.split(' - ')[0]
+    if title_no_date in ('Full Meeting', 'Entire Meeting', 'Whole Meeting') and config['id'] == 'vancouver':
+        title_no_date = metadata['project_name']
+
     kwargs = {
-        'clip_title': metadata['title'],
+        'clip_title': title_no_date,
         'clip_date': ts.astimezone(get_tz(config)),
-        'minutes_url': get_minutes_url(config, metadata),
+        'minutes_url': minutes_url,
+        'project_name': metadata['project_name'],
     }
     timecodes = "\n".join('{entry[time]} - {entry[title]}'.format(entry=entry) for entry in metadata['timecodes'])
     if timecodes:
@@ -133,7 +150,7 @@ class YoutubeSession(OAuth2Session):
         super().__init__(client, credentials)
 
     def start_resumable_upload(self, file_size, video_resource, notify_subscribers):
-        print("Starting a resumable upload session for " + video_resource['snippet']['title'])
+        print("Starting a resumable upload session")
         print("Notify subscribers: {}".format(notify_subscribers))
         resp = self.post(
             'https://www.googleapis.com/upload/youtube/v3/videos', params={
@@ -157,9 +174,9 @@ class YoutubeSession(OAuth2Session):
         else:
             resp.raise_for_status()
 
-    def upload_video(self, video_path, config, metadata):
+    def upload_video(self, video_path, config, metadata, minutes_url):
         video_size = os.path.getsize(video_path)
-        video_resource = build_youtube_video_resource(config, metadata)
+        video_resource = build_youtube_video_resource(config, metadata, minutes_url)
         print(video_resource['snippet']['title'])
         print(video_resource['snippet']['description'])
         print("Visibility: " + video_resource['status']['privacyStatus'])
@@ -264,12 +281,12 @@ if __name__ == '__main__':
         for_date = for_date.replace(tzinfo=local_tz).date()
 
     client_creds = load_client_credentials()
-    client_id = client_creds['client_id']
     credentials_file = config['id'] + '.tokens.json'
 
     if args.action == 'authorize':
         if os.path.isfile(credentials_file):
             print("This will replace the existing credentials in " + credentials_file)
+        client_id = client_creds['client_id']
         user_code_resp = obtain_user_code(client_id)
         print("Visit " + user_code_resp['verification_url'])
         print("Enter code " + user_code_resp['user_code'])
@@ -305,11 +322,27 @@ if __name__ == '__main__':
             if for_date and for_date != video_ts.date():
                 continue
 
+            print("Working on: " + metadata['title'])
+
+            minutes_url = None
+            if '{minutes_url}' in config['youtube']['desc']:
+                try:
+                    minutes_url = get_minutes_url(config, metadata)
+                except HTTPError as e:
+                    print(e)
+                    while True:
+                        minutes_url = input("Enter minutes URL for this video: ")
+                        if minutes_url.startswith('http') and not session.head(minutes_url).ok:
+                            print("Invalid URL. Try again")
+                            continue
+                        break
+
+
             max_retries = 6
             video_id = None
             for i in range(max_retries):
                 try:
-                    video_id = session.upload_video(video_path, config, metadata)
+                    video_id = session.upload_video(video_path, config, metadata, minutes_url)
                     break
                 except HTTPError as e:
                     if i == (max_retries-1):
@@ -321,11 +354,17 @@ if __name__ == '__main__':
                         continue
                     raise
 
-            playlist = config['youtube'].get('playlist')
-            if playlist:
-                ts = parse_timestamp_naively(metadata['start'])
-                playlist = playlist.format(clip_date=ts.astimezone(get_tz(config))).strip()
-                session.add_video_to_playlist(playlist, video_id, config['youtube'].get('privacy', 'unlisted'))
+            playlists = config['youtube'].get('playlist')
+            if playlists:
+                if not isinstance(playlists, list):
+                    platlists = [playlists]
+                for playlist in playlists:
+                    ts = parse_timestamp_naively(metadata['start'])
+                    playlist = playlist.format(
+                        clip_date=ts.astimezone(get_tz(config)),
+                        project_name=metadata['project_name'],
+                    ).strip()
+                    session.add_video_to_playlist(playlist, video_id, config['youtube'].get('privacy', 'unlisted'))
 
             if not args.keep_uploaded:
                 os.remove(video_path)

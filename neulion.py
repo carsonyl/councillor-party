@@ -89,14 +89,21 @@ class NeulionScraperApi(object):
             start_utc = start_utc.replace(tzinfo=pytz.utc)
             duration = list(map(int, tr.find_all('td')[2].text.strip().split(':')))
             duration = timedelta(hours=duration[0], minutes=duration[1], seconds=duration[2])
+
+            # Fix glitched titles by swapping in description that looks like title (Vancouver 2015-2-24).
+            title = ' '.join(a.text.strip().split())
+            clip_descr = hidden_vals['clip_descr']
+            if title.startswith('adaptive://') and clip_descr:
+                title = clip_descr
+
             yield Clip(
                 url,
-                a.text,
+                title,
                 hidden_vals['clip_rank'],
-                hidden_vals['clip_descr'],
+                clip_descr,
                 start_utc,  # This value lies: it's usually fixed to nearest hour and at start of entire meeting.
                 hidden_vals['clip_project'],
-                hidden_vals['clip_id'],
+                hidden_vals['clip_id'].replace('adaptive://', '').replace('/', '_'),
                 duration,
             )
 
@@ -127,15 +134,20 @@ def group_video_clips(clips):
     :param clips: List of clips.
     :return: Ordered dict where keys are root clips, and values are lists of subclips for it.
     """
-    # Hack for when Call to Order comes before the entire meeting clip. (Burnaby 2015-09-28)
-    if len(clips) > 1 and clips[0].name == 'Call to Order' and clips[1].name == 'Entire Council Meeting':
-        clips = clips[1:]
-
     # Hack for when 'entire meeting' is incorrectly sized. (Burnaby 2016-07-11)
     first_clip = clips[0]
     _, _, duration = parse_time_range_from_url(first_clip.url)
     if len(clips) > 1 and first_clip.name == 'Entire Council Meeting' and duration < timedelta(seconds=5):
         return group_all_clips_under_first_clip(clips)
+
+    def root_clip_by_name(clip):
+        return clip.name.startswith('Regular Council') or clip.name.startswith('Public Hearing') \
+               or 'Whole Meeting' in clip.name or 'Entire Meeting' in clip.name \
+               or clip.name.startswith('Planning, Transportation') or clip.name.startswith('Policy &') \
+               or clip.name.startswith('Complete Standing Committee')
+
+    candidate_root_clips = list(filter(root_clip_by_name, clips))
+    clips = candidate_root_clips + list(filter(lambda x: not root_clip_by_name(x), clips))
 
     sorted_clips = OrderedDict()
     for clip in clips:
@@ -144,7 +156,7 @@ def group_video_clips(clips):
         for root_clip in sorted_clips:
             root_start, root_end, _ = parse_time_range_from_url(root_clip.url)
             # Workaround for some subclips being slightly outside of a root clip's start time.
-            if clip_start < root_start and clip_start - root_start < timedelta(seconds=2):
+            if clip_start < root_start and abs((clip_start - root_start).total_seconds()) < 2:
                 clip_start = root_start
             if root_start <= clip_start <= root_end:
                 sorted_clips[root_clip].append(clip)

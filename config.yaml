@@ -16,6 +16,9 @@ youtube:
   privacy: public
   notify_subscribers: false
 audio_mono: true
+minutes_abbrs_for: title
+minutes_abbrs:
+  Special Regular Council: SRC
 ---
 id: burnaby
 url: 'http://civic.neulion.com/cityofburnaby/'
@@ -29,9 +32,37 @@ youtube:
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
-#---
-#id: vancouver
-#url: 'http://civic.neulion.com/cityofvancouver/'
+---
+id: vancouver
+url: 'http://civic.neulion.com/cityofvancouver/'
+youtube:
+  title: '{clip_title}, {clip_date:%Y-%m-%d}'
+  desc: >
+    {project_name} on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
+    Vancouver City Council in British Columbia, Canada.
+
+
+    Agenda: {minutes_url}
+
+    {timecodes}
+  location: [49.260832, -123.113962]
+  location_desc: Vancouver City Hall, Vancouver, BC, Canada
+  playlist:
+    - '{clip_date:%Y-%m} Vancouver BC City Council Meeting'
+    - 'Vancouver {project_name}'
+  tags: [vancouver, bc, canada, city council meeting]
+  privacy: unlisted
+  notify_subscribers: false
+minutes_abbrs_for: project_name
+minutes_abbrs:
+  CF&S: cfsc
+  CS&B: csbc
+  P&SP: pspc
+  PT&E: ptec
+  Public Hearing: phea
+  Regular Council: regu
+  Special Council: spec
+  T&T: tt
 #---
 #id: langley
 #url: 'http://civic.neulion.com/cityoflangley/'

@@ -81,10 +81,12 @@ def download_clip(adaptive_url, destination, workers):
     print("Downloaded {:.1f} MB".format(total_size / 1024 / 1024))
 
 
-def write_video_metadata(config, clip_info, timecodes, out_file):
+def write_video_metadata(config, clip_info, project_id_map, timecodes, out_file):
     print("Writing video metadata to " + out_file)
     start_ts, end_ts, duration = parse_time_range_from_url(clip_info.url)
     timecodes = [{'time': timecode, 'title': clip.name} for timecode, clip in timecodes.items()]
+    timecodes = sorted(timecodes, key=lambda x: x['time'])
+
     metadata = {
         'config_id': config['id'],
         'recorded_date': clip_info.start_utc.isoformat(),
@@ -93,7 +95,8 @@ def write_video_metadata(config, clip_info, timecodes, out_file):
         'duration': duration_to_timecode(duration),
         'title': clip_info.name,
         'video_url': clip_info.url,
-        'project': clip_info.project,
+        'project_id': clip_info.project,
+        'project_name': project_id_map[clip_info.project].replace(';', ''),
         'id': clip_info.id,
         'timecodes': timecodes,
     }
@@ -114,9 +117,15 @@ if __name__ == '__main__':
 
     api = NeulionScraperApi(config['url'])
     all_projects = next(api.projects())
+    project_id_map = {project.id: project.name for project in api.projects()}
     for date in dates:
         clips = list(api.clips(date, all_projects.id))
         clip_groups = group_video_clips(clips)
+        for root_clip, subclips in clip_groups.items():
+            print("Root clip: " + root_clip.name)
+            for subclip in subclips:
+                print("Subclip: " + subclip.name)
+
         for root_clip, subclips in clip_groups.items():
             if args.title_contains and args.title_contains not in root_clip.name:
                 continue
@@ -127,7 +136,7 @@ if __name__ == '__main__':
             outdir = os.path.join('segments', segments_dir)
             if not os.path.isdir(outdir):
                 os.makedirs(outdir)
-            write_video_metadata(config, root_clip, timecodes, os.path.join(outdir, '_metadata.yaml'))
+            write_video_metadata(config, root_clip, project_id_map, timecodes, os.path.join(outdir, '_metadata.yaml'))
             download_clip(root_clip.url, outdir, args.workers)
 
             with open(os.path.join(outdir, '_done.txt'), 'w') as f:

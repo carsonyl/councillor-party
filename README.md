@@ -8,6 +8,7 @@ The following YouTube channels are automated using Councillor Party:
 
 * [Surrey BC City Council Meetings](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw)
 * [Burnaby BC City Council Meetings](https://www.youtube.com/channel/UCk7Xv8-7kPMzDrEEjJfU2Qw)
+* [Vancouver BC City Council Meetings](https://www.youtube.com/channel/UCAOvmwJyHEGhV_vUYv82HxA)
 
 This project is maintained by [Carson Lam](https://www.carsonlam.ca) ([@carsonyl](https://twitter.com/carsonyl)).
 
