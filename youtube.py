@@ -357,7 +357,7 @@ if __name__ == '__main__':
             playlists = config['youtube'].get('playlist')
             if playlists:
                 if not isinstance(playlists, list):
-                    platlists = [playlists]
+                    playlists = [playlists]
                 for playlist in playlists:
                     ts = parse_timestamp_naively(metadata['start'])
                     playlist = playlist.format(
