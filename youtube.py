@@ -158,7 +158,7 @@ class YoutubeSession(OAuth2Session):
                 'part': ','.join(video_resource.keys()),
                 'notifySubscribers': notify_subscribers,
             }, headers={
-                'X-Upload-Content-Length': file_size,
+                'X-Upload-Content-Length': str(file_size),
                 'X-Upload-Content-Type': 'application/octet-stream',
             },
             json=video_resource,
