@@ -29,7 +29,6 @@ def parse_timestamp_naively(ts):
 
 
 def get_minutes_url(config, metadata):
-    title = metadata['title']
     start_date = parse_timestamp_naively(metadata['start']).astimezone(get_tz(config))
     meeting_type = None
     for key, value in config.get('minutes_abbrs', {}).items():
@@ -37,14 +36,10 @@ def get_minutes_url(config, metadata):
             meeting_type = value
             break
 
-    if config['id'] == 'surrey':
-        if '(' in title and ')' in title:
-            meeting_type = title[title.find('(') + 1: title.find(')')]
-        elif not meeting_type:
-            return 'N/A'
-        mins = 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_{}_{:%Y_%m_%d}.pdf'.format(meeting_type, start_date)
-        requests.head(mins).raise_for_status()
-        return mins
+    minutes_url = metadata.get('minutes_url')
+    if minutes_url:
+        requests.head(minutes_url).raise_for_status()
+        return minutes_url
     elif config['id'] == 'vancouver':
         if not meeting_type:
             return 'N/A'
@@ -79,7 +74,7 @@ def build_youtube_video_resource(config, metadata, minutes_url):
         'clip_title': title_no_date,
         'clip_date': ts.astimezone(get_tz(config)),
         'minutes_url': minutes_url,
-        'project_name': metadata['project_name'],
+        'project_name': metadata.get('project_name', ''),
     }
     timecodes = "\n".join('{entry[time]} - {entry[title]}'.format(entry=entry) for entry in metadata['timecodes'])
     if timecodes:
@@ -362,7 +357,7 @@ if __name__ == '__main__':
                     ts = parse_timestamp_naively(metadata['start'])
                     playlist = playlist.format(
                         clip_date=ts.astimezone(get_tz(config)),
-                        project_name=metadata['project_name'],
+                        project_name=metadata.get('project_name', ''),
                     ).strip()
                     session.add_video_to_playlist(playlist, video_id, config['youtube'].get('privacy', 'unlisted'))
 

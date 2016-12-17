@@ -4,10 +4,13 @@ Script and functions for downloading videos and their metadata.
 import argparse
 import logging
 import os
+import re
+
+import pytz
 import yaml
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from datetime import datetime
+from datetime import datetime, time
 from requests import Session
 from tqdm import tqdm
 
@@ -162,15 +165,22 @@ def download_granicus(args, dates):
         segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], video.date, clip_id)
         outdir = prepare_segments_output_dir(segments_dir)
 
+        local_tz = pytz.timezone('America/Vancouver')
+        video_ts_local = local_tz.localize(datetime.combine(video.date, time(0, 0)))
+        video_ts_utc = video_ts_local.astimezone(pytz.utc)
+
+        stripped_title = re.sub(r' \(\w+\.? \d+, \d+\)', '', video.title, flags=re.I).strip()
         metadata = {
             'config_id': config['id'],
-            'recorded_date': video.date.isoformat(),
-            'start': video.date.isoformat() + 'T00:00:00Z',
-            'end': video.date.isoformat() + 'T00:00:00Z',
-            'title': video.title,
+            'recorded_date': video_ts_utc.isoformat(),
+            'start': video_ts_utc.isoformat(),
+            'end': video_ts_utc.isoformat(),
+            'title': stripped_title,
             'video_url': video.video_url,
             'id': clip_id,
             'timecodes': [],
+            'minutes_url': 'http://www.surrey.ca/bylawsandcouncillibrary/MIN_{}_{:%Y_%m_%d}.pdf'.format(
+                video.minutes_url_title.split()[0], video.date),
         }
         with open(os.path.join(outdir, '_metadata.yaml'), 'w') as outf:
             yaml.dump(metadata, outf)
