@@ -20,7 +20,7 @@ def segment_files(segments_dir):
     return sorted(filter(lambda filename: not filename.startswith('_'), os.listdir(segments_dir)))
 
 
-def write_ffmpeg_concat_file(segments_dir):
+def write_ffmpeg_concat_file(segments_dir, segment_duration):
     concat_file_path = os.path.join(segments_dir, '_concat.txt')
     print("Writing ffmpeg concat file to " + concat_file_path)
     tmp_out = concat_file_path + '.tmp'
@@ -32,7 +32,8 @@ def write_ffmpeg_concat_file(segments_dir):
             concat_file.write("file '{}'\n".format(segment_path))
             # Be explicit about duration instead of letting ffmpeg infer it.
             # Otherwise, error accumulates and video lengthens over time.
-            concat_file.write("duration 2\n")
+            if segment_duration:
+                concat_file.write("duration {}\n".format(segment_duration))
     if os.path.isfile(concat_file_path):
         os.remove(concat_file_path)
     os.rename(tmp_out, concat_file_path)
@@ -52,8 +53,10 @@ def ffmpeg_concat(concat_file, video_out, mono, loglevel):
     cmd = ['ffmpeg', '-loglevel', loglevel, '-safe', '0', '-f', 'concat', '-i', concat_file]
     if mono:
         print("Converting to mono")
-        cmd.extend(['-af', 'pan=mono|c0=c0', '-c:v', 'copy'])
+        # The encoder 'aac' is experimental but experimental codecs are not enabled, add '-strict -2' if you want to use it.
+        cmd.extend(['-af', 'pan=mono|c0=c0', '-c:v', 'copy', '-strict', '-2'])
     else:
+        # '-bsf:a', 'aac_adtstoasc'
         cmd.extend(['-c', 'copy'])
     cmd.append(tmp_video_out)
     subprocess.check_call(cmd)
@@ -125,23 +128,27 @@ if __name__ == '__main__':
                 metadata = safe_load(inf)
             config = get_config(metadata['config_id'])
 
-            start_ts = datetime.strptime(segment_files(segment_dir_path)[0], SEGMENT_FILE_PATTERN)
-            with open(os.path.join(segment_dir_path, '_missing_segments.txt')) as msf:
-                missing_segment_timestamps = map(
-                    lambda segment_url: segment_url_to_timestamp(segment_url.rstrip()), msf
-                )
-                num_missing_seconds = adjust_timecodes_for_missing_segments(start_ts, missing_segment_timestamps,
-                                                                            metadata['timecodes'])
-            metadata['missing_seconds'] = num_missing_seconds
+            try:
+                start_ts = datetime.strptime(segment_files(segment_dir_path)[0], SEGMENT_FILE_PATTERN)
+                with open(os.path.join(segment_dir_path, '_missing_segments.txt')) as msf:
+                    missing_segment_timestamps = map(
+                        lambda segment_url: segment_url_to_timestamp(segment_url.rstrip()), msf
+                    )
+                    num_missing_seconds = adjust_timecodes_for_missing_segments(start_ts, missing_segment_timestamps,
+                                                                                metadata['timecodes'])
+                metadata['missing_seconds'] = num_missing_seconds
+            except ValueError:
+                pass
 
-            concat_file = write_ffmpeg_concat_file(segment_dir_path)
+            segment_duration_s = 2 if config['provider'] == 'neulion' else None
+            concat_file = write_ffmpeg_concat_file(segment_dir_path, segment_duration=segment_duration_s)
             video_out = os.path.join('videos', segment_dir + '.mp4')
             ffmpeg_concat(concat_file, video_out, config.get('audio_mono', False), args.ffmpeg_log_level)
             print("Finished concatenating " + video_out)
 
             concat_duration = ffmpeg_duration(video_out)
             concat_duration_txt = duration_to_timecode(timedelta(seconds=int(round(concat_duration))))
-            print("Original duration: {}. Concatenated duration: {}".format(metadata['duration'], concat_duration_txt))
+            print("Original duration: {}. Concatenated duration: {}".format(metadata.get('duration', '?'), concat_duration_txt))
 
             # Update metadata with concatenated duration.
             metadata['concat_duration'] = concat_duration_txt

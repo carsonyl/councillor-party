@@ -12,6 +12,7 @@ from requests import Session
 from tqdm import tqdm
 
 from config import get_config, get_tz
+from granicus import GranicusScraperApi
 from neulion import adaptive_url_to_segment_urls, NeulionScraperApi, group_video_clips, calculate_timecodes, \
     parse_time_range_from_url, duration_to_timecode, segment_url_to_timestamp
 
@@ -36,7 +37,7 @@ def download_segment(session, clip_url, dest):
         raise MissingSegmentError(clip_url)
 
 
-def download_clip(adaptive_url, destination, workers):
+def download_clip(segment_urls, destination, workers):
     if not os.path.isdir(destination):
         raise ValueError("destination must be directory")
 
@@ -49,9 +50,12 @@ def download_clip(adaptive_url, destination, workers):
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = []
 
-        for segment_url in adaptive_url_to_segment_urls(adaptive_url):
-            timestamp = segment_url_to_timestamp(segment_url)
-            filename = timestamp.strftime(SEGMENT_FILE_PATTERN)
+        for i, segment_url in enumerate(segment_urls):
+            try:
+                timestamp = segment_url_to_timestamp(segment_url)
+                filename = timestamp.strftime(SEGMENT_FILE_PATTERN)
+            except ValueError:
+                filename = str(i).zfill(5) + '.' + os.path.basename(segment_url).split('.')[-1]
             dest = os.path.join(destination, filename)
             if os.path.exists(dest) and os.path.getsize(dest):
                 # print("{} Already exists - skipping".format(dest))
@@ -71,6 +75,9 @@ def download_clip(adaptive_url, destination, workers):
                 except MissingSegmentError as e:
                     missing_segments.write(e.clip_url + '\n')
                     num_missing_segments += 1
+                except Exception as e:
+                    print(e)
+                    raise
                 progressbar.update()
         progressbar.close()
 
@@ -110,11 +117,15 @@ parser.add_argument('dates', help='Download video segments for videos on this da
 parser.add_argument('--title-contains', help='Only download video segments for clips that contain this in its title.')
 parser.add_argument('--workers', type=int, default=8, help='Max number of concurrent downloads.')
 
-if __name__ == '__main__':
-    args = parser.parse_args()
-    config = get_config(args.config_id)
-    dates = [datetime.strptime(date, '%Y-%m-%d') for date in args.dates.split(',')]
 
+def prepare_segments_output_dir(segments_dir):
+    outdir = os.path.join('segments', segments_dir)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
+    return outdir
+
+
+def download_neulion(args, dates):
     api = NeulionScraperApi(config['url'])
     all_projects = next(api.projects())
     project_id_map = {project.id: project.name for project in api.projects()}
@@ -133,11 +144,51 @@ if __name__ == '__main__':
             timecodes = calculate_timecodes(root_clip, subclips)
             local_time = root_clip.start_utc.astimezone(get_tz(config))
             segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], local_time, root_clip.id.replace(',', '.'))
-            outdir = os.path.join('segments', segments_dir)
-            if not os.path.isdir(outdir):
-                os.makedirs(outdir)
+            outdir = prepare_segments_output_dir(segments_dir)
             write_video_metadata(config, root_clip, project_id_map, timecodes, os.path.join(outdir, '_metadata.yaml'))
-            download_clip(root_clip.url, outdir, args.workers)
+            download_clip(adaptive_url_to_segment_urls(root_clip.url), outdir, args.workers)
 
             with open(os.path.join(outdir, '_done.txt'), 'w') as f:
                 f.write('yes')
+
+
+def download_granicus(args, dates):
+    api = GranicusScraperApi(config['url'])
+    for video in api.get_videos():
+        if video.date not in dates:
+            continue
+        print("Working on '{}' for {}".format(video.title, video.date.isoformat()))
+        clip_id = api.get_clip_id(video.video_url)
+        segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], video.date, clip_id)
+        outdir = prepare_segments_output_dir(segments_dir)
+
+        metadata = {
+            'config_id': config['id'],
+            'recorded_date': video.date.isoformat(),
+            'start': video.date.isoformat() + 'T00:00:00Z',
+            'end': video.date.isoformat() + 'T00:00:00Z',
+            'title': video.title,
+            'video_url': video.video_url,
+            'id': clip_id,
+            'timecodes': [],
+        }
+        with open(os.path.join(outdir, '_metadata.yaml'), 'w') as outf:
+            yaml.dump(metadata, outf)
+
+        streams = api.get_streams(clip_id)
+        download_clip(api.get_video_piece_urls(streams.m3u8_url), outdir, args.workers)
+
+        with open(os.path.join(outdir, '_done.txt'), 'w') as f:
+            f.write('yes')
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    config = get_config(args.config_id)
+    dates = [datetime.strptime(date, '%Y-%m-%d').date() for date in args.dates.split(',')]
+
+    provider = config['provider']
+    if provider == 'neulion':
+        download_neulion(args, dates)
+    elif provider == 'granicus':
+        download_granicus(args, dates)

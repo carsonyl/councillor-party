@@ -102,7 +102,7 @@ def build_youtube_video_resource(config, metadata, minutes_url):
 
     description = ytconfig['desc'].format(**kwargs).rstrip()
     description += "\n\nThis is an automated re-upload."
-    missing_seconds = metadata['missing_seconds']
+    missing_seconds = metadata.get('missing_seconds', 0)
     if missing_seconds:
         description += " Due to technical difficulties, this video is missing {} seconds.".format(missing_seconds)
 

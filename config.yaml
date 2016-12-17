@@ -1,6 +1,7 @@
 ---
 id: surrey
-url: 'http://civic.neulion.com/cityofsurrey/'
+url: 'http://surrey.ca.granicus.com/ViewPublisher.php?view_id=1'
+provider: granicus
 youtube:
   title: Surrey {clip_title}, {clip_date:%Y-%m-%d}
   desc: >
@@ -22,6 +23,7 @@ minutes_abbrs:
 ---
 id: burnaby
 url: 'http://civic.neulion.com/cityofburnaby/'
+provider: neulion
 youtube:
   title: Burnaby City Council Meeting, {clip_date:%Y-%m-%d}
   desc:
@@ -35,6 +37,7 @@ youtube:
 ---
 id: vancouver
 url: 'http://civic.neulion.com/cityofvancouver/'
+provider: neulion
 youtube:
   title: '{clip_title}, {clip_date:%Y-%m-%d}'
   desc: >
@@ -51,7 +54,7 @@ youtube:
     - '{clip_date:%Y-%m} Vancouver BC City Council Meeting'
     - 'Vancouver {project_name}'
   tags: [vancouver, bc, canada, city council meeting]
-  privacy: unlisted
+  privacy: public
   notify_subscribers: false
 minutes_abbrs_for: project_name
 minutes_abbrs:
