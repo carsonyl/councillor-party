@@ -53,6 +53,49 @@ def get_minutes_url(config, metadata):
     return 'N/A'
 
 
+def build_youtube_resource(title, description, recording_date, coords=None, location_desc=None, tags=None, category=25,
+                           privacy='unlisted', language='en'):
+    """
+    Build a YouTube video resource as per https://developers.google.com/youtube/v3/docs/videos.
+
+    :param title:
+    :param description:
+    :param recording_date:
+    :param coords:
+    :param location_desc:
+    :param tags:
+    :param category: Default is 25, 'News & Politics'.
+    :param privacy: public|private|unlisted
+    :param language: 2-letter language code.
+    """
+    recording_details = {
+        'recordingDate': recording_date.in_timezone('UTC').to_iso8601_string().replace('+00:00', '.0Z'),
+    }
+    if coords:
+        recording_details['location'] = {
+            'latitude': coords[0],
+            'longitude': coords[1],
+            'altitude': 0.0,
+        }
+    if location_desc:
+        recording_details['locationDescription'] = location_desc
+
+    return {
+        'snippet': {
+            'title': title,
+            'description': description,
+            'tags': tags if tags else [],
+            'categoryId': category,
+            'defaultLanguage': language,
+            'defaultAudioLanguage': language,
+        },
+        'status': {
+            'privacyStatus': privacy,
+        },
+        'recordingDetails': recording_details,
+    }
+
+
 def build_youtube_video_resource(config, metadata, minutes_url):
     """
     Build a YouTube video resource as per https://developers.google.com/youtube/v3/docs/videos.
@@ -140,7 +183,7 @@ def chunked_read(handle, chunk_size, progress):
         chunk = handle.read(chunk_size)
 
 
-class YoutubeSession(OAuth2Session):
+class YouTubeSession(OAuth2Session):
     def __init__(self, client, credentials):
         super().__init__(client, credentials)
 
@@ -158,6 +201,8 @@ class YoutubeSession(OAuth2Session):
             },
             json=video_resource,
             allow_redirects=False)
+        if not resp.ok:
+            print(resp.text)
         resp.raise_for_status()
         return resp.headers['Location']
 
@@ -168,6 +213,34 @@ class YoutubeSession(OAuth2Session):
             return int(resp.headers['Range'].split('-')[1]) + 1, int(resp.headers.get('Retry-After', 0))
         else:
             resp.raise_for_status()
+
+    def upload(self, video_path, video_resource, notify_subscribers=False):
+        video_size = os.path.getsize(video_path)
+        session_url = self.start_resumable_upload(video_size, video_resource, notify_subscribers)
+        seek_to = 0
+        print("Starting upload of {} ({} bytes)".format(video_path, video_size))
+        chunk_size = 1024 * 1024
+        with open(video_path, 'rb') as video:
+            while True:
+                headers = {'Content-Type': 'application/octet-stream'}
+                if seek_to > 0:
+                    headers['Content-Range'] = 'bytes {}-{}/{}'.format(seek_to, video_size, video_size)
+                video.seek(seek_to)
+                progress = tqdm(total=video_size, initial=seek_to, unit_scale=True, dynamic_ncols=True)
+                resp = self.put(session_url, data=chunked_read(video, chunk_size, progress), headers=headers)
+                progress.close()
+                if resp.status_code in (500, 502, 503, 504):
+                    seek_to, retry_after = resumable_upload_status(session, session_url, video_path)
+                    print("Failed after {}/{}. Retrying in {} seconds".format(seek_to, video_size, retry_after))
+                    time.sleep(retry_after)
+                    continue
+                if resp.ok:  # Not necessarily 201, contrary to the doc.
+                    js = resp.json()
+                    print("Upload succeeded: https://www.youtube.com/watch?v=" + js['id'])
+                    return js['id']
+                print(resp.text)
+                resp.raise_for_status()
+                break
 
     def upload_video(self, video_path, config, metadata, minutes_url):
         video_size = os.path.getsize(video_path)
@@ -296,18 +369,19 @@ if __name__ == '__main__':
         with open(credentials_file) as inf:
             credentials = json.load(inf)
 
-        session = YoutubeSession(client_creds, credentials)
+        session = YouTubeSession(client_creds, credentials)
 
         for filename in sorted(os.listdir('videos')):
             if not filename.startswith(config['id']):
                 continue
-            if not filename.endswith('.mp4'):
+            extension = filename.split('.')[-1]
+            if extension not in ('mp4', 'wmv'):
                 continue
-            if filename.endswith('.tmp.mp4'):
+            if '.tmp.' in filename:
                 print('{} is not ready'.format(filename))
                 break
             video_path = os.path.join('videos', filename)
-            metadata_path = os.path.join('videos', filename.replace('.mp4', '.yaml'))
+            metadata_path = os.path.join('videos', filename.replace('.' + extension, '.yaml'))
             with open(metadata_path) as inf:
                 metadata = yaml.safe_load(inf)
 

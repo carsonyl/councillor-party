@@ -37,3 +37,19 @@ Behind the scenes, all videos are comprised of 2-second clips that the Flash pla
 This project includes code to discover available videos, download the corresponding ranges of 2-second clips, 
 use ffmpeg to concatenate them into a single video, and re-upload them onto YouTube with configurable metadata.
 
+Workflow
+--------
+
+A few steps need to be completed prior to first use:
+
+1. Add a Google API Project and an OAuth2 client ID credential.
+   Save the credential file file as `client_id.json`.
+2. Define a configuration in `config.yaml`. Use the existing definitions as a template.
+3. Run `youtube.py [config_id] authorize` to grant access to the YouTube channel to receive uploaded videos.
+   The credentials are saved as `[config_id].client.json`.
+
+The basic workflow for the download-transform-upload procedure is as follows:
+
+1. Download the videos for a particular date using `download.py [config_id] [YYYY-MM-DD]`.
+2. Concatenate and process the videos using `concat.py`.
+3. Upload using `youtube.py [config_id] upload`.

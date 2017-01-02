@@ -1,0 +1,4 @@
+file 'test\1.mp4'
+duration 00:00:02
+file 'test\2.mp4'
+duration 00:00:02

@@ -10,12 +10,13 @@ import pytz
 import yaml
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from requests import Session
 from tqdm import tqdm
 
 from config import get_config, get_tz
 from granicus import GranicusScraperApi
+from insinc import InsIncScraperApi, group_clips, group_root_and_subclips
 from neulion import adaptive_url_to_segment_urls, NeulionScraperApi, group_video_clips, calculate_timecodes, \
     parse_time_range_from_url, duration_to_timecode, segment_url_to_timestamp
 
@@ -192,6 +193,45 @@ def download_granicus(args, dates):
             f.write('yes')
 
 
+def download_insinc(args, dates):
+    api = InsIncScraperApi(config['url'])
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        for dt in dates:
+            print("Looking for clips on {:%Y-%m-%d}".format(dt))
+            for mms_url, grouped_clips in group_clips(api.get_clips(dt)).items():
+                download_dest = os.path.join(ar)
+                executor.submit(download_mms, mms_url, download_dest)
+                for root_clip, subclips in group_root_and_subclips(grouped_clips).items():
+                    print("Working on '{}' for {}".format(root_clip.title, dt.isoformat()))
+                    for subclip in subclips:
+                        print("Subclip: {}".format(subclip))
+                    mms_filename = os.path.basename(mms_url) + root_clip.start_time.strftime('%H%M%S')
+                    segments_dir = '{}_{:%Y%m%d}_{}'.format(config['id'], dt, mms_filename)
+                    outdir = prepare_segments_output_dir(segments_dir)
+
+                    local_tz = pytz.timezone('America/Vancouver')
+                    video_ts_local = local_tz.localize(datetime.combine(dt, time(0, 0)))
+                    video_ts_utc = video_ts_local.astimezone(pytz.utc)
+
+                    metadata = {
+                        'config_id': config['id'],
+                        'recorded_date': video_ts_utc.isoformat(),
+                        'start': video_ts_utc.isoformat(),
+                        'end': video_ts_utc.isoformat(),
+                        'title': root_clip.title,
+                        'video_url': mms_url,
+                        'id': mms_filename,
+                        'timecodes': [],
+                    }
+                    with open(os.path.join(outdir, '_metadata.yaml'), 'w') as outf:
+                        yaml.dump(metadata, outf)
+
+                    download_mms(mms_url, root_clip.start_time, root_clip.duration, outdir)
+
+                    with open(os.path.join(outdir, '_done.txt'), 'w') as f:
+                        f.write('yes')
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
     config = get_config(args.config_id)
@@ -202,3 +242,5 @@ if __name__ == '__main__':
         download_neulion(args, dates)
     elif provider == 'granicus':
         download_granicus(args, dates)
+    elif provider == 'insinc':
+        download_insinc(args, dates)

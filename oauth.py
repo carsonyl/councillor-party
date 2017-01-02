@@ -6,7 +6,14 @@ from datetime import datetime, timedelta
 from requests import Session
 
 
-def load_client_credentials(cred_file='client_id.json'):
+TOKENS_DIR = 'auth'
+
+
+def tokens_file_for_id(project_id):
+    return os.path.join(TOKENS_DIR, project_id + '.token.json')
+
+
+def load_client_credentials(cred_file=os.path.join(TOKENS_DIR, 'client_id.json')):
     # https://console.developers.google.com/apis/credentials
     if not os.path.isfile(cred_file):
         raise ValueError("{} is missing".format(cred_file))

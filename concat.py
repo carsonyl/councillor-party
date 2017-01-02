@@ -127,6 +127,9 @@ if __name__ == '__main__':
             with open(metadata_path) as inf:
                 metadata = safe_load(inf)
             config = get_config(metadata['config_id'])
+            provider = config['provider']
+            if provider not in ('neulion', 'granicus'):
+                continue
 
             try:
                 start_ts = datetime.strptime(segment_files(segment_dir_path)[0], SEGMENT_FILE_PATTERN)
@@ -140,9 +143,9 @@ if __name__ == '__main__':
             except ValueError:
                 pass
 
-            segment_duration_s = 2 if config['provider'] == 'neulion' else None
+            segment_duration_s = 2 if provider == 'neulion' else None
             concat_file = write_ffmpeg_concat_file(segment_dir_path, segment_duration=segment_duration_s)
-            video_out = os.path.join('videos', segment_dir + '.mp4')
+            video_out = os.path.join('videos', segment_dir + '.wmv')
             ffmpeg_concat(concat_file, video_out, config.get('audio_mono', False), args.ffmpeg_log_level)
             print("Finished concatenating " + video_out)
 

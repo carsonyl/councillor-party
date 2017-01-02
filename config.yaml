@@ -12,7 +12,8 @@ youtube:
     Meeting minutes: {minutes_url}
   location: [49.191307, -122.848743]
   location_desc: Surrey City Hall, Surrey, BC, Canada
-  playlist: '{clip_date:%Y-%m-%d} Surrey BC City Council Meeting'
+  playlists:
+    - '{clip_date:%Y-%m-%d} Surrey BC City Council Meeting'
   tags: [surrey, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
@@ -30,7 +31,8 @@ youtube:
     Burnaby City Council Meeting on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
 
     {timecodes}
-  playlist: '{clip_date:%Y-%m} Burnaby BC City Council Meetings'
+  playlists:
+    - '{clip_date:%Y-%m} Burnaby BC City Council Meetings'
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
@@ -50,7 +52,7 @@ youtube:
     {timecodes}
   location: [49.260832, -123.113962]
   location_desc: Vancouver City Hall, Vancouver, BC, Canada
-  playlist:
+  playlists:
     - '{clip_date:%Y-%m} Vancouver BC City Council Meeting'
     - 'Vancouver {project_name}'
   tags: [vancouver, bc, canada, city council meeting]
@@ -66,6 +68,26 @@ minutes_abbrs:
   Regular Council: regu
   Special Council: spec
   T&T: tt
+---
+id: coquitlam
+url: 'http://coquitlam.insinc.com'
+provider: insinc
+youtube:
+  title: 'Coquitlam {category}, {start_ts:%Y-%m-%d}'
+  desc: >
+    {category} on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}. {title}.
+    Coquitlam City Council in British Columbia, Canada.
+
+
+    {timecodes}
+  location: [49.2844794, -122.7931796]
+  location_desc: Coquitlam City Hall, Coquitlam, BC, Canada
+  playlists:
+    - '{start_ts:%Y} Coquitlam BC City Council Meetings'
+    - '{category}'
+  tags: [coquitlam, bc, canada, city council meeting]
+  privacy: unlisted
+  notify_subscribers: false
 #---
 #id: langley
 #url: 'http://civic.neulion.com/cityoflangley/'

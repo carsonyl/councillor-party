@@ -1,11 +1,11 @@
 __pycache__/*
-*.exe
-*.mp4
 .cache/*
 .idea/*
+metadata/*
+downloads/*
 segments/*
 videos/*
 *.concat.txt
-.youtube-upload-credentials.json
-client_id.json
-*.tokens.json
+*.exe
+*.mp4
+*.wmv
