@@ -195,17 +195,17 @@ def is_root_clip(clip_title, also_allow_startswith=None):
 
 def group_clips(clips) -> dict:
     groups = OrderedDict()
-    for mms_url, clips in groupby(clips, key=lambda clip: clip.mms_url):
+    for mms_url, grouped_clips in groupby(clips, key=lambda clip: clip.mms_url):
         # First, break any ties with root clip start times. Ensure root clips come first.
-        clips = list(clips)
+        grouped_clips = list(grouped_clips)
         # for i, clip in enumerate(clips):
         #     if is_root_clip(clip.title) and i != 0:
         #         clip.start_time = adjust_timecode(clips[i-1].start_time, -2)
-        if is_root_clip(clips[0].title):
-            ordered_clips = [clips[0]]
-            ordered_clips[1:] = sorted(clips[1:], key=lambda clip: clip.start_time)
+        if is_root_clip(grouped_clips[0].title):
+            ordered_clips = [grouped_clips[0]]
+            ordered_clips[1:] = sorted(grouped_clips[1:], key=lambda clip: clip.start_time)
         else:
-            ordered_clips = sorted(clips, key=lambda clip: clip.start_time)
+            ordered_clips = sorted(grouped_clips, key=lambda clip: clip.start_time)
 
         if len(ordered_clips) > 1 and not is_root_clip(ordered_clips[0].title):
             if is_root_clip(ordered_clips[1].title, 'opening remarks'):
@@ -214,7 +214,7 @@ def group_clips(clips) -> dict:
                 ordered_clips[-1].start_time = adjust_timecode(ordered_clips[0].start_time, -1)
             elif is_root_clip(ordered_clips[-2].title):
                 ordered_clips[-2].start_time = adjust_timecode(ordered_clips[0].start_time, -1)
-            ordered_clips = sorted(clips, key=lambda clip: clip.start_time)
+            ordered_clips = sorted(grouped_clips, key=lambda clip: clip.start_time)
 
         dupes_removed = [ordered_clips[0]]
         for i, clip in enumerate(ordered_clips[1:], start=1):
