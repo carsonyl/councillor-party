@@ -2,14 +2,14 @@ Councillor Party
 ================
 
 **Councillor Party** is a set of Python scripts for downloading city council videos hosted by various vendors,
-and then re-uploading them onto YouTube. Supported platforms include Neulion, InsInc, and Granicus.
+and then re-uploading them onto YouTube. Supported vendors include Neulion, InsInc, and Granicus.
 
 The following YouTube channels are automated using Councillor Party:
 
-* [Coquitlam BC City Council Meetings](https://www.youtube.com/channel/UCMvE5ag8fWAoFxLbw62D9rw)
-* [Surrey BC City Council Meetings](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw)
-* [Burnaby BC City Council Meetings](https://www.youtube.com/channel/UCk7Xv8-7kPMzDrEEjJfU2Qw)
-* [Vancouver BC City Council Meetings](https://www.youtube.com/channel/UCAOvmwJyHEGhV_vUYv82HxA)
+* [Coquitlam BC City Council Meetings](https://www.youtube.com/channel/UCMvE5ag8fWAoFxLbw62D9rw) (InsInc)
+* [Surrey BC City Council Meetings](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw) (Granicus and Neulion)
+* [Burnaby BC City Council Meetings](https://www.youtube.com/channel/UCk7Xv8-7kPMzDrEEjJfU2Qw) (Neulion)
+* [Vancouver BC City Council Meetings](https://www.youtube.com/channel/UCAOvmwJyHEGhV_vUYv82HxA) (Neulion)
 
 This project is maintained by [Carson Lam](https://www.carsonlam.ca) ([@carsonyl](https://twitter.com/carsonyl)).
 
@@ -33,24 +33,15 @@ Technical details
 This is a Python 3.4+ project that runs on all platforms. Python dependencies are listed in `requirements.txt`.
 It requires [ffmpeg](https://ffmpeg.org/) to be on the path: `ffmpeg` and `ffprobe` in particular. 
 
-Neulion and Granicus serve videos in small pieces that are each a few seconds long.
+Neulion and Granicus use a Flash player to play videos that are served in small pieces, each a few seconds long.
 Councillor Party gathers these pieces and concatenates them into a single video.
 
-InsInc serves videos as a Windows Media stream.
-Councillor Party downloads the whole stream and then splices out video segments according to meeting timestamps.
+InsInc uses a Silverlight player to play videos served as a Windows Media stream.
+Councillor Party downloads the whole stream and then splices out video segments according to clip timestamps.
 A single stream may contain more than one meeting.
 
 Workflow
 --------
-
-A few steps need to be completed prior to first use:
-
-1. Add a Google API Project and an OAuth2 client ID credential.
-   Save the credential file under `auth/client_id.json`.
-2. Define a configuration in `config.yaml`. Use the existing definitions as a template.
-3. Run `councillor-party.py [config_id] youtube authorize`
-   to grant access to the YouTube channel to receive uploaded videos.
-   The credentials are saved under `auth/[config_id].token.json`.
 
 The basic workflow for the download-transform-upload procedure is as follows:
 
@@ -58,3 +49,12 @@ The basic workflow for the download-transform-upload procedure is as follows:
 2. Download the videos for a given date using `councillor-party.py [config_id] download [YYYY-MM-DD]`.
 3. Perform any required processing (concatenation, splicing, etc.) using `councillor-party.py [config_id] process`.
 4. Upload the process video, with assembled metadata, using `councillor-party.py [config_id] youtube upload`.
+
+In order to upload videos to YouTube, additional setup is needed:
+
+1. Add a Google API Project and an OAuth2 client ID credential.
+   Save the credential file under `auth/client_id.json`.
+2. Define a configuration in `config.yaml`. Use the existing definitions as a template.
+3. Run `councillor-party.py [config_id] youtube authorize`
+   to grant access to the YouTube channel to receive uploaded videos.
+   The credentials are saved under `auth/[config_id].token.json`.
