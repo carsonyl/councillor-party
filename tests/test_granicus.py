@@ -14,7 +14,7 @@ def test_get_videos():
         assert '<' not in video.title
         assert video.agenda_url is None or video.agenda_url.startswith('http')
         assert video.minutes_url is None or video.minutes_url.startswith('http')
-        assert video.video_url.startswith('http')
+        assert video.url.startswith('http')
 
 
 def test_get_streams():

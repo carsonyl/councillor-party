@@ -29,7 +29,7 @@ class VideoMetadata(yaml.YAMLObject):
         self.url = url
 
     def __str__(self):
-        return "{}: '{}' ({})".format(self.category, self.title, self.start_ts.isoformat())
+        return "{}: '{}' ({})".format(self.category, self.title, pendulum.parse(self.start_ts).isoformat())
 
 
 class TimeCode(yaml.YAMLObject):
