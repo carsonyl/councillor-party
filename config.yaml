@@ -3,24 +3,23 @@ id: surrey
 url: 'http://surrey.ca.granicus.com/ViewPublisher.php?view_id=1'
 provider: granicus
 youtube:
-  title: Surrey {clip_title}, {clip_date:%Y-%m-%d}
+  title: Surrey {title}, {start_ts:%Y-%m-%d}
   desc: >
-    {clip_title} on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
+    {title} on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}.
     Surrey City Council in British Columbia, Canada.
-
-
-    Meeting minutes: {minutes_url}
   location: [49.191307, -122.848743]
   location_desc: Surrey City Hall, Surrey, BC, Canada
   playlists:
-    - '{clip_date:%Y-%m-%d} Surrey BC City Council Meeting'
+    - '{start_ts:%Y} Surrey BC City Council Meetings'
+    - '{category}'
   tags: [surrey, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
 audio_mono: true
-minutes_abbrs_for: title
-minutes_abbrs:
-  Special Regular Council: SRC
+---
+id: poco
+url: 'https://portcoquitlam.ca.granicus.com/ViewPublisher.php?view_id=2'
+provider: granicus
 ---
 id: burnaby
 url: 'http://civic.neulion.com/cityofburnaby/'

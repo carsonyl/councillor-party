@@ -27,6 +27,8 @@ class NeulionClipMetadata(VideoMetadata):
         url_parts = url.split('_')
         start_ts = url_parts[-2]
         start_ts = datetime.strptime(start_ts, '%Y%m%d%H%M%S')
+        start_ts = start_ts.replace(tzinfo=pytz.utc)
+
         duration = url_parts[-1].replace('.mp4', '')
         duration = timedelta(hours=int(duration[0:2]), minutes=int(duration[2:4]), seconds=int(duration[4:6]))
 

@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from common import VideoProvider, yaml_dump, yaml_load, build_substitutions_dict, tweak_metadata
 from config import get_config
+from granicus import GranicusScraperApi
 from insinc import InsIncScraperApi
 from neulion import NeulionScraperApi
 from oauth import load_client_credentials, obtain_user_code, poll_for_authorization, tokens_file_for_id
@@ -28,6 +29,8 @@ def get_provider_obj(config) -> VideoProvider:
         return InsIncScraperApi(config['url'])
     elif provider == 'neulion':
         return NeulionScraperApi(config['url'])
+    elif provider == 'granicus':
+        return GranicusScraperApi(config['url'])
 
 
 def parse_date_range(for_dates):

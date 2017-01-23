@@ -108,7 +108,7 @@ def yaml_load(file_path):
 
 def build_substitutions_dict(video_metadata: VideoMetadata):
     obj = video_metadata.__dict__.copy()
-    # obj['start_ts'] = pendulum.parse(obj['start_ts'])
+    obj['start_ts'] = pendulum.parse(obj['start_ts'])
     obj['timecodes'] = '\n'.join('{} - {}'.format(x.start_ts, x.title) for x in video_metadata.timecodes).strip()
     return obj
 

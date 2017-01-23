@@ -42,7 +42,8 @@ def ffmpeg_concat(concat_file, video_out, mono=False, loglevel='warning'):
     cmd = ['ffmpeg', '-loglevel', loglevel, '-safe', '0', '-f', 'concat', '-i', concat_file]
     if mono:
         # The encoder 'aac' is experimental but experimental codecs are not enabled, add '-strict -2' if you want to use it.
-        cmd.extend(['-af', 'pan=mono|c0=c0', '-c:v', 'copy', '-strict', '-2'])
+        # Must specify AAC encoder or else result is not to spec and will be silent in VLC.
+        cmd.extend(['-c:a', 'aac', '-af', 'pan=mono|c0=c0', '-c:v', 'copy', '-strict', '-2'])
     else:
         # '-bsf:a', 'aac_adtstoasc'
         cmd.extend(['-c', 'copy'])
