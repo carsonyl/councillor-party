@@ -13,6 +13,7 @@ from tqdm import tqdm
 from common import VideoProvider, yaml_dump, yaml_load, build_substitutions_dict, tweak_metadata
 from config import get_config
 from insinc import InsIncScraperApi
+from neulion import NeulionScraperApi
 from oauth import load_client_credentials, obtain_user_code, poll_for_authorization, tokens_file_for_id
 from youtube import YouTubeSession, build_youtube_resource
 
@@ -25,6 +26,8 @@ def get_provider_obj(config) -> VideoProvider:
     provider = config['provider']
     if provider == 'insinc':
         return InsIncScraperApi(config['url'])
+    elif provider == 'neulion':
+        return NeulionScraperApi(config['url'])
 
 
 def parse_date_range(for_dates):
@@ -122,6 +125,15 @@ def download(config, for_dates, threads):
                 future.result()
                 progressbar.update()
             progressbar.close()
+    else:
+        for date_metadata in load_date_metadata():
+            for root in date_metadata:
+                dest = os.path.join('downloads', config['id'], root.video_id)
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                print("Starting task to save {} to {}".format(root.url, dest))
+                yaml_dump([root], os.path.join(dest, '_metadata.yaml'))
+                provider.download(root.url, dest)
 
 
 @cli.command(help='Do any needed post-processing for downloaded videos.')
@@ -141,8 +153,9 @@ def process(config, delete_after, startswith):
             continue
 
         metadatas = yaml_load(os.path.join(download_dir, '_metadata.yaml'))
+        mono = config.get('audio_mono', False)
         for video_metadata in metadatas:
-            prepped_video_info = provider.postprocess(video_metadata, download_dir, VIDEOS_DIR)
+            prepped_video_info = provider.postprocess(video_metadata, download_dir, VIDEOS_DIR, mono=mono)
             prepped_video_info.config_id = config['id']
 
             overrides = tweak_metadata(config['id'], prepped_video_info.video_metadata)

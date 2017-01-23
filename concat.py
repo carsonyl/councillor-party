@@ -2,78 +2,19 @@
 Script and functions for concatenating downloaded video segments using ffmpeg.
 """
 import argparse
-import codecs
 import os
 import shutil
-import subprocess
 import time
-import yaml
 from datetime import timedelta, datetime
+
+import yaml
 from yaml import safe_load
 
 from config import get_config
 from download import SEGMENT_FILE_PATTERN
-from neulion import duration_to_timecode, timecode_to_duration, segment_url_to_timestamp
-
-
-def segment_files(segments_dir):
-    return sorted(filter(lambda filename: not filename.startswith('_'), os.listdir(segments_dir)))
-
-
-def write_ffmpeg_concat_file(segments_dir, segment_duration):
-    concat_file_path = os.path.join(segments_dir, '_concat.txt')
-    print("Writing ffmpeg concat file to " + concat_file_path)
-    tmp_out = concat_file_path + '.tmp'
-    with open(tmp_out, 'w') as concat_file:
-        for filename in segment_files(segments_dir):
-            # Windows ffmpeg needs paths relative to ffmpeg binary.
-            # Linux ffmpeg needs paths relative to the concat file.
-            segment_path = os.path.join(segments_dir, filename) if os.name == 'nt' else filename
-            concat_file.write("file '{}'\n".format(segment_path))
-            # Be explicit about duration instead of letting ffmpeg infer it.
-            # Otherwise, error accumulates and video lengthens over time.
-            if segment_duration:
-                concat_file.write("duration {}\n".format(segment_duration))
-    if os.path.isfile(concat_file_path):
-        os.remove(concat_file_path)
-    os.rename(tmp_out, concat_file_path)
-    return concat_file_path
-
-
-def ffmpeg_concat(concat_file, video_out, mono, loglevel):
-    # http://stackoverflow.com/questions/7333232/concatenate-two-mp4-files-using-ffmpeg
-    # http://superuser.com/questions/924364/ffmpeg-how-to-convert-stereo-to-mono-using-audio-pan-filter
-    print("Concatenating videos listed in {} to {}".format(concat_file, video_out))
-    tmp_video_out = video_out.replace('.mp4', '.tmp.mp4')
-    for check_existing in (tmp_video_out, video_out):
-        if os.path.isfile(check_existing):
-            print("Deleting existing video " + check_existing)
-            os.remove(check_existing)
-
-    cmd = ['ffmpeg', '-loglevel', loglevel, '-safe', '0', '-f', 'concat', '-i', concat_file]
-    if mono:
-        print("Converting to mono")
-        # The encoder 'aac' is experimental but experimental codecs are not enabled, add '-strict -2' if you want to use it.
-        cmd.extend(['-af', 'pan=mono|c0=c0', '-c:v', 'copy', '-strict', '-2'])
-    else:
-        # '-bsf:a', 'aac_adtstoasc'
-        cmd.extend(['-c', 'copy'])
-    cmd.append(tmp_video_out)
-    subprocess.check_call(cmd)
-    os.rename(tmp_video_out, video_out)
-
-
-def ffmpeg_duration(video_path):
-    """
-    Get video duration using ffprobe.
-
-    :param video_path: Video to inspect.
-    :return: Video duration in float seconds.
-    """
-    result = subprocess.check_output(['ffprobe', '-show_entries', 'format=duration', video_path])
-    result = codecs.decode(result, 'utf8')
-    result = result[result.find('[FORMAT]'):result.find('[/FORMAT]')]
-    return float(result.split('=')[1].strip())
+from ffmpeg import ffmpeg_concat, ffmpeg_duration
+from neulion import duration_to_timecode, timecode_to_duration
+from segment_tools import segment_url_to_timestamp, write_ffmpeg_concat_file, segment_files
 
 
 def adjust_timecodes_for_missing_segments(start_ts, missing_timestamps, timecodes):

@@ -1,7 +1,9 @@
 import abc
 import re
+from collections import OrderedDict
+from copy import copy
 from datetime import date
-from typing import Iterable
+from typing import Iterable, List
 
 import pendulum
 import yaml
@@ -68,7 +70,7 @@ class VideoProvider(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def postprocess(self, video_metadata: VideoMetadata, download_dir, destination_dir) -> PreparedVideoInfo:
+    def postprocess(self, video_metadata: VideoMetadata, download_dir, destination_dir, **kwargs) -> PreparedVideoInfo:
         pass
 
 
@@ -87,6 +89,13 @@ def adjust_timecode(timecode, seconds):
     return '{:02d}:{:02d}:{:02d}'.format(h, m, s)
 
 
+def shift_timecodes(timecodes: List[TimeCode], relative_to: str):
+    shift_timecode_s = timecode_to_seconds(relative_to)
+    for timecode in timecodes:
+        timecode.start_ts = adjust_timecode(timecode.start_ts, -shift_timecode_s)
+        timecode.end_ts = adjust_timecode(timecode.end_ts, -shift_timecode_s)
+
+
 def yaml_dump(obj, file_path, width=120):
     with open(file_path, 'w') as outf:
         yaml.dump(obj, outf, width=width)
@@ -99,7 +108,7 @@ def yaml_load(file_path):
 
 def build_substitutions_dict(video_metadata: VideoMetadata):
     obj = video_metadata.__dict__.copy()
-    obj['start_ts'] = pendulum.parse(obj['start_ts'])
+    # obj['start_ts'] = pendulum.parse(obj['start_ts'])
     obj['timecodes'] = '\n'.join('{} - {}'.format(x.start_ts, x.title) for x in video_metadata.timecodes).strip()
     return obj
 
@@ -121,3 +130,40 @@ def tweak_metadata(config_id, metadata: VideoMetadata):
             if found_part:
                 return {'category': found_part}
     return {}
+
+
+def is_root_clip(clip_title, also_allow_startswith=None):
+    clip_title = clip_title.lower()
+    if also_allow_startswith and clip_title.startswith(also_allow_startswith):
+        return True
+    if clip_title in ('webcast unavailable', 'archive unavailable', 'inaugural council meeting', 'public hearing'):
+        return True
+    for keyword in ('regular council - ', 'public hearing - ', 'edited entire', 'whole ', 'entire ', 'full ', 'special council '):
+        if clip_title.startswith(keyword) or keyword + 'meeting' in clip_title:
+            if 'minutes' in clip_title and 'audio' not in clip_title and 'sound' not in clip_title:
+                return False
+            return True
+    return False
+
+
+def group_root_and_subclips(clips: List[VideoMetadata]):
+    grouped = OrderedDict()
+    current_root = None
+    for clip in clips:
+        if is_root_clip(clip.title):
+            current_root = clip
+            grouped[current_root] = []
+        else:
+            try:
+                grouped[current_root].append(clip)
+            except KeyError:
+                print(clip)
+                if clip.title.endswith('session)') or (len(clips) == 1 and (clip.category == 'Other' or clip.title == 'committee')) \
+                        or clip.title.startswith('Opening Remarks') or 'Call to Order' in clip.title:
+                    # Continuation of existing session. Hack up a root clip for it.
+                    artificial_root = copy(clip)
+                    current_root = artificial_root
+                    grouped[current_root] = [current_root]
+                    continue
+                raise
+    return grouped

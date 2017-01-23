@@ -26,13 +26,14 @@ id: burnaby
 url: 'http://civic.neulion.com/cityofburnaby/'
 provider: neulion
 youtube:
-  title: Burnaby City Council Meeting, {clip_date:%Y-%m-%d}
+  title: Burnaby City Council Meeting, {start_ts:%Y-%m-%d}
   desc:
-    Burnaby City Council Meeting on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
+    Burnaby City Council Meeting on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}.
+
 
     {timecodes}
   playlists:
-    - '{clip_date:%Y-%m} Burnaby BC City Council Meetings'
+    - '{start_ts:%Y} Burnaby BC City Council Meetings'
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
@@ -41,33 +42,21 @@ id: vancouver
 url: 'http://civic.neulion.com/cityofvancouver/'
 provider: neulion
 youtube:
-  title: '{clip_title}, {clip_date:%Y-%m-%d}'
+  title: '{title}, {start_ts:%Y-%m-%d}'
   desc: >
-    {project_name} on {clip_date:%A, %B} {clip_date.day}, {clip_date:%Y}.
+    {category} on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}.
     Vancouver City Council in British Columbia, Canada.
 
-
-    Agenda: {minutes_url}
 
     {timecodes}
   location: [49.260832, -123.113962]
   location_desc: Vancouver City Hall, Vancouver, BC, Canada
   playlists:
-    - '{clip_date:%Y-%m} Vancouver BC City Council Meeting'
-    - 'Vancouver {project_name}'
+    - '{start_ts:%Y} Vancouver BC City Council Meetings'
+    - '{category}'
   tags: [vancouver, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: false
-minutes_abbrs_for: project_name
-minutes_abbrs:
-  CF&S: cfsc
-  CS&B: csbc
-  P&SP: pspc
-  PT&E: ptec
-  Public Hearing: phea
-  Regular Council: regu
-  Special Council: spec
-  T&T: tt
 ---
 id: coquitlam
 url: 'http://coquitlam.insinc.com'

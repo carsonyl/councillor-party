@@ -1,34 +1,93 @@
 """
 Utilities for interacting with Neulion and interpreting data retrieved from it.
 """
-import pytz
-from bs4 import BeautifulSoup
+import os
 from collections import OrderedDict
 from collections import namedtuple
-from datetime import datetime, timedelta
-from requests import Session
+from datetime import datetime, timedelta, date
+from typing import Iterable
 from urllib.parse import urlparse
 
+import pendulum
+import pytz
+from bs4 import BeautifulSoup
+from requests import Session
+
+from common import VideoProvider, VideoMetadata, group_root_and_subclips, TimeCode, PreparedVideoInfo, shift_timecodes
+from ffmpeg import ffmpeg_concat
+from segment_tools import download_clip, write_ffmpeg_concat_file
+
 Project = namedtuple('Project', ['id', 'name'])
-Clip = namedtuple('Clip', ['url', 'name', 'rank', 'descr', 'start_utc', 'project', 'id', 'duration'])
+NeulionClip = namedtuple('Clip', ['url', 'title', 'rank', 'descr', 'start_utc', 'project', 'id', 'duration'])
 
 
-class NeulionScraperApi(object):
+class NeulionClipMetadata(VideoMetadata):
+    def __init__(self, clip_id, project_id, rank, title, descr, clip_start_utc, url,
+                 category=None, timecodes=None):
+        url_parts = url.split('_')
+        start_ts = url_parts[-2]
+        start_ts = datetime.strptime(start_ts, '%Y%m%d%H%M%S')
+        duration = url_parts[-1].replace('.mp4', '')
+        duration = timedelta(hours=int(duration[0:2]), minutes=int(duration[2:4]), seconds=int(duration[4:6]))
+
+        super().__init__(clip_id, title, category, start_ts, start_ts + duration, timecodes, url)
+        self.project_id = project_id
+        self.rank = rank
+        self.descr = descr
+        self.clip_start_utc = clip_start_utc
+        self.duration = duration
+
+
+class NeulionScraperApi(VideoProvider):
     """
     Methods for discovering available videos.
     """
 
-    def __init__(self, site_url):
+    def __init__(self, site_url, tz='America/Vancouver'):
         """
         :param site_url: URL of the Neulion Civic Streaming page to scrape.
         """
-        self.site_url = site_url
+        super().__init__(site_url)
+        self.tz = tz
         self._site_soup = None
         self.session = Session()
 
+    def available_dates(self, start_date: date, end_date: date) -> Iterable[pendulum.Date]:
+        for available_date in self.allowed_dates():
+            if start_date <= available_date <= end_date:
+                yield pendulum.Date(available_date)
+
+    def get_metadata(self, for_date) -> Iterable[VideoMetadata]:
+        projects = OrderedDict()
+        all_meetings_project = None
+        for project in self.projects():
+            if not all_meetings_project:
+                all_meetings_project = project
+            projects[project.id] = project
+
+        clips = list(self.clips(for_date, all_meetings_project.id))
+        clips.sort(key=lambda clip: clip.start_ts)
+        for root, subclips in group_root_and_subclips(clips).items():
+            root.category = projects[root.project_id].name
+            timecodes = [TimeCode(c.start_ts.strftime('%H:%M:%S'), c.title, c.end_ts.strftime('%H:%M:%S')) for c in subclips]
+            root.timecodes = timecodes
+            yield root
+
+    def download(self, url, destination_dir):
+        download_clip(adaptive_url_to_segment_urls(url), destination_dir, 16)
+
+    def postprocess(self, video_metadata: VideoMetadata, download_dir, destination_dir, **kwargs) -> PreparedVideoInfo:
+        concat_file_path = write_ffmpeg_concat_file(download_dir, 2)
+        video_filename = video_metadata.video_id + '.mp4'
+        video_path = os.path.join(destination_dir, video_filename)
+        ffmpeg_concat(concat_file_path, video_path, mono=kwargs.get('mono', False))
+
+        shift_timecodes(video_metadata.timecodes, video_metadata.start_ts.strftime('%H:%M:%S'))
+        return PreparedVideoInfo(video_metadata, video_filename)
+
     def _get_site_html(self):
         if not self._site_soup:
-            resp = self.session.get(self.site_url)
+            resp = self.session.get(self.provider_url)
             resp.raise_for_status()
             self._site_soup = BeautifulSoup(resp.text, 'html.parser')
         return self._site_soup
@@ -60,7 +119,7 @@ class NeulionScraperApi(object):
                 yield datetime.strptime(element, '%Y-%m-%d').date()
             break
 
-    def clips(self, for_date, project_ids):
+    def clips(self, for_date: date, project_ids):
         """
         Get the video clips available for a given date and project.
 
@@ -73,8 +132,8 @@ class NeulionScraperApi(object):
             'f': 'getClips',
             'device': 'desktop',
             'prid': project_ids,
-            'proj_from': for_date.strftime('%Y-%m-%d'),
-            'tz': 'America/Los_Angeles',
+            'proj_from': pendulum.Date.instance(for_date).to_date_string(),
+            'tz': self.tz,
         })
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, 'html.parser')
@@ -85,10 +144,10 @@ class NeulionScraperApi(object):
             hidden_vals = {}
             for inp in tr.find_all('input'):
                 hidden_vals[inp['name']] = inp['value']
-            start_utc = datetime.strptime(hidden_vals['clip_start_utc'], '%Y-%m-%d %H:%M:%S')
+
+            # This value lies: it's usually fixed to nearest hour and at start of entire meeting.
+            start_utc = pendulum.parse(hidden_vals['clip_start_utc'])
             start_utc = start_utc.replace(tzinfo=pytz.utc)
-            duration = list(map(int, tr.find_all('td')[2].text.strip().split(':')))
-            duration = timedelta(hours=duration[0], minutes=duration[1], seconds=duration[2])
 
             # Fix glitched titles by swapping in description that looks like title (Vancouver 2015-2-24).
             title = ' '.join(a.text.strip().split())
@@ -96,15 +155,14 @@ class NeulionScraperApi(object):
             if title.startswith('adaptive://') and clip_descr:
                 title = clip_descr
 
-            yield Clip(
-                url,
-                title,
-                hidden_vals['clip_rank'],
-                clip_descr,
-                start_utc,  # This value lies: it's usually fixed to nearest hour and at start of entire meeting.
+            yield NeulionClipMetadata(
+                hidden_vals['clip_id'],
                 hidden_vals['clip_project'],
-                hidden_vals['clip_id'].replace('adaptive://', '').replace('/', '_'),
-                duration,
+                hidden_vals['clip_rank'],
+                title,
+                clip_descr,
+                start_utc.isoformat(),
+                url,
             )
 
 
@@ -219,7 +277,3 @@ def adaptive_url_to_segment_urls(adaptive_url):
     while current_time < end_ts:
         yield '{}/{:%Y%m%d/%H/%M%S}.mp4'.format(url, current_time)
         current_time += clip_length
-
-
-def segment_url_to_timestamp(segment_url):
-    return datetime.strptime(''.join(segment_url.split('/')[-3:])[:-4], '%Y%m%d%H%M%S')

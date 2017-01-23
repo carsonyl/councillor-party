@@ -5,91 +5,22 @@ import argparse
 import logging
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, time
 
 import pytz
 import yaml
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import as_completed
-from datetime import datetime, time, timedelta
-from requests import Session
-from tqdm import tqdm
 
+from common import group_root_and_subclips
 from config import get_config, get_tz
 from granicus import GranicusScraperApi
-from insinc import InsIncScraperApi, group_clips, group_root_and_subclips
+from insinc import InsIncScraperApi, group_clips
 from neulion import adaptive_url_to_segment_urls, NeulionScraperApi, group_video_clips, calculate_timecodes, \
-    parse_time_range_from_url, duration_to_timecode, segment_url_to_timestamp
+    parse_time_range_from_url, duration_to_timecode
+from segments import download_clip
 
 log = logging.getLogger()
 SEGMENT_FILE_PATTERN = '%Y%m%d%H%M%S.mp4'
-
-
-class MissingSegmentError(ValueError):
-    def __init__(self, clip_url):
-        super(MissingSegmentError, self).__init__()
-        self.clip_url = clip_url
-
-
-def download_segment(session, clip_url, dest):
-    resp = session.get(clip_url, stream=True)
-    resp.raise_for_status()
-    with open(dest, 'wb') as outvid:
-        for chunk in resp.iter_content(chunk_size=2048):
-            outvid.write(chunk)
-    if not os.path.getsize(dest):
-        os.remove(dest)
-        raise MissingSegmentError(clip_url)
-
-
-def download_clip(segment_urls, destination, workers):
-    if not os.path.isdir(destination):
-        raise ValueError("destination must be directory")
-
-    for trailing_file in sorted(filter(lambda filename: filename.endswith('.mp4'), os.listdir(destination)))[-workers:]:
-        print("Deleting potentially incomplete segment {}".format(trailing_file))
-        os.remove(os.path.join(destination, trailing_file))
-
-    session = Session()
-    num_skipped_because_already_exists, num_missing_segments = 0, 0
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = []
-
-        for i, segment_url in enumerate(segment_urls):
-            try:
-                timestamp = segment_url_to_timestamp(segment_url)
-                filename = timestamp.strftime(SEGMENT_FILE_PATTERN)
-            except ValueError:
-                filename = str(i).zfill(5) + '.' + os.path.basename(segment_url).split('.')[-1]
-            dest = os.path.join(destination, filename)
-            if os.path.exists(dest) and os.path.getsize(dest):
-                # print("{} Already exists - skipping".format(dest))
-                num_skipped_because_already_exists += 1
-                continue
-
-            future = executor.submit(download_segment, session, segment_url, dest)
-            futures.append(future)
-
-        print("{} segments were previously downloaded".format(num_skipped_because_already_exists))
-        progressbar = tqdm(total=num_skipped_because_already_exists + len(futures),
-                           initial=num_skipped_because_already_exists, dynamic_ncols=True)
-        with open(os.path.join(destination, '_missing_segments.txt'), 'w') as missing_segments:
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except MissingSegmentError as e:
-                    missing_segments.write(e.clip_url + '\n')
-                    num_missing_segments += 1
-                except Exception as e:
-                    print(e)
-                    raise
-                progressbar.update()
-        progressbar.close()
-
-    if num_missing_segments:
-        log.warning("{} segments were empty and omitted".format(num_missing_segments))
-
-    total_size = sum(os.path.getsize(os.path.join(destination, f)) for f in os.listdir(destination))
-    print("Downloaded {:.1f} MB".format(total_size / 1024 / 1024))
 
 
 def write_video_metadata(config, clip_info, project_id_map, timecodes, out_file):

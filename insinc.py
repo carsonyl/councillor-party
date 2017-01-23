@@ -1,17 +1,15 @@
 import os
 import re
 from collections import OrderedDict
-
 from datetime import date, timedelta, datetime
 from itertools import groupby, chain
-from operator import itemgetter
 
 import pendulum
 import yaml
 from bs4 import BeautifulSoup
-from copy import copy
 
-from common import VideoProvider, VideoMetadata, TimeCode, adjust_timecode, timecode_to_seconds, PreparedVideoInfo
+from common import VideoProvider, VideoMetadata, TimeCode, adjust_timecode, timecode_to_seconds, PreparedVideoInfo, \
+    is_root_clip, group_root_and_subclips, shift_timecodes
 from ffmpeg import download_mms, clip_video
 
 
@@ -93,7 +91,7 @@ class InsIncScraperApi(VideoProvider):
         print("Download of {} completed on {} in {} seconds".format(
             mms_url, end_time.isoformat(), elapsed.total_seconds()))
 
-    def postprocess(self, video_metadata, download_dir, destination_dir):
+    def postprocess(self, video_metadata, download_dir, destination_dir, **kwargs):
         filename_from_video_url = os.path.basename(video_metadata.url)
         video_path = os.path.join(download_dir, filename_from_video_url)
         if not os.path.exists(video_path):
@@ -104,10 +102,7 @@ class InsIncScraperApi(VideoProvider):
         start_timecode = adjust_timecode(start_timecode, -2)
         end_timecode = adjust_timecode(end_timecode, 2)
 
-        shift_timecode_s = timecode_to_seconds(start_timecode)
-        for timecode in video_metadata.timecodes:
-            timecode.start_ts = adjust_timecode(timecode.start_ts, -shift_timecode_s)
-            timecode.end_ts = adjust_timecode(timecode.end_ts, -shift_timecode_s)
+        shift_timecodes(video_metadata.timecodes, start_timecode)
 
         filename_parts = filename_from_video_url.split('.')
         filename_parts.insert(len(filename_parts)-1, '{}_{}'.format(
@@ -179,20 +174,6 @@ class InsIncScraperApi(VideoProvider):
                 yield InsIncVideoClip(category, title, mms_url, actual_date, start_time, end_time)
 
 
-def is_root_clip(clip_title, also_allow_startswith=None):
-    clip_title = clip_title.lower()
-    if also_allow_startswith and clip_title.startswith(also_allow_startswith):
-        return True
-    if clip_title in ('webcast unavailable', 'archive unavailable', 'inaugural council meeting', 'public hearing'):
-        return True
-    for keyword in ('edited entire', 'whole ', 'entire ', 'full ', 'special council '):
-        if clip_title.startswith(keyword) or keyword + 'meeting' in clip_title:
-            if 'minutes' in clip_title and 'audio' not in clip_title and 'sound' not in clip_title:
-                return False
-            return True
-    return False
-
-
 def group_clips(clips) -> dict:
     groups = OrderedDict()
     for mms_url, grouped_clips in groupby(clips, key=lambda clip: clip.mms_url):
@@ -224,26 +205,3 @@ def group_clips(clips) -> dict:
 
         groups[mms_url] = dupes_removed
     return groups
-
-
-def group_root_and_subclips(clips):
-    grouped = OrderedDict()
-    current_root = None
-    for clip in clips:
-        if is_root_clip(clip.title):
-            current_root = clip
-            grouped[current_root] = []
-        else:
-            try:
-                grouped[current_root].append(clip)
-            except KeyError:
-                print(clip)
-                if clip.title.endswith('session)') or (len(clips) == 1 and (clip.category == 'Other' or clip.title == 'committee')) \
-                        or clip.title.startswith('Opening Remarks') or 'Call to Order' in clip.title:
-                    # Continuation of existing session. Hack up a root clip for it.
-                    artificial_root = copy(clip)
-                    current_root = artificial_root
-                    grouped[current_root] = [current_root]
-                    continue
-                raise
-    return grouped
