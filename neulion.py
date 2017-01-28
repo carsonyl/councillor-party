@@ -32,7 +32,7 @@ class NeulionClipMetadata(VideoMetadata):
         duration = url_parts[-1].replace('.mp4', '')
         duration = timedelta(hours=int(duration[0:2]), minutes=int(duration[2:4]), seconds=int(duration[4:6]))
 
-        super().__init__(clip_id, title, category, start_ts, start_ts + duration, timecodes, url)
+        super().__init__(clip_id, title, category, start_ts.isoformat(), (start_ts + duration).isoformat(), timecodes, url)
         self.project_id = project_id
         self.rank = rank
         self.descr = descr
@@ -57,7 +57,7 @@ class NeulionScraperApi(VideoProvider):
     def available_dates(self, start_date: date, end_date: date) -> Iterable[pendulum.Date]:
         for available_date in self.allowed_dates():
             if start_date <= available_date <= end_date:
-                yield pendulum.Date(available_date)
+                yield pendulum.Date.instance(available_date)
 
     def get_metadata(self, for_date) -> Iterable[VideoMetadata]:
         projects = OrderedDict()
@@ -71,7 +71,7 @@ class NeulionScraperApi(VideoProvider):
         clips.sort(key=lambda clip: clip.start_ts)
         for root, subclips in group_root_and_subclips(clips).items():
             root.category = projects[root.project_id].name
-            timecodes = [TimeCode(c.start_ts.strftime('%H:%M:%S'), c.title, c.end_ts.strftime('%H:%M:%S')) for c in subclips]
+            timecodes = [TimeCode(pendulum.parse(c.start_ts).strftime('%H:%M:%S'), c.title, pendulum.parse(c.end_ts).strftime('%H:%M:%S')) for c in subclips]
             root.timecodes = timecodes
             yield root
 
@@ -84,7 +84,7 @@ class NeulionScraperApi(VideoProvider):
         video_path = os.path.join(destination_dir, video_filename)
         ffmpeg_concat(concat_file_path, video_path, mono=kwargs.get('mono', False))
 
-        shift_timecodes(video_metadata.timecodes, video_metadata.start_ts.strftime('%H:%M:%S'))
+        shift_timecodes(video_metadata.timecodes, pendulum.parse(video_metadata.start_ts).strftime('%H:%M:%S'))
         return PreparedVideoInfo(video_metadata, video_filename)
 
     def _get_site_html(self):
@@ -149,7 +149,7 @@ class NeulionScraperApi(VideoProvider):
 
             # This value lies: it's usually fixed to nearest hour and at start of entire meeting.
             start_utc = pendulum.parse(hidden_vals['clip_start_utc'])
-            start_utc = start_utc.replace(tzinfo=pytz.utc)
+            start_utc = start_utc.replace(tzinfo=self.tz)  # Not actually UTC.
 
             # Fix glitched titles by swapping in description that looks like title (Vancouver 2015-2-24).
             title = ' '.join(a.text.strip().split())
