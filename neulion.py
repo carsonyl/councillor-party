@@ -101,7 +101,7 @@ class NeulionScraperApi(VideoProvider):
         """
         soup = self._get_site_html()
         for option in soup.find(id='projectsSelector').find_all('option'):
-            yield Project(option['value'], option.text)
+            yield Project(option['value'], option.text.replace(';', ''))
 
     def allowed_dates(self):
         """

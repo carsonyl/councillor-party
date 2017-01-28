@@ -52,7 +52,7 @@ youtube:
   location_desc: Vancouver City Hall, Vancouver, BC, Canada
   playlists:
     - '{start_ts:%Y} Vancouver BC City Council Meetings'
-    - '{category}'
+    - 'Vancouver {category}'
   tags: [vancouver, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: true

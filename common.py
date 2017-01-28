@@ -138,7 +138,7 @@ def is_root_clip(clip_title, also_allow_startswith=None):
         return True
     if clip_title in ('webcast unavailable', 'archive unavailable', 'inaugural council meeting', 'public hearing'):
         return True
-    for keyword in ('regular council - ', 'public hearing - ', 'edited entire', 'whole ', 'entire ', 'full ', 'special council '):
+    for keyword in ('regular council - ', 'regular council meeting', 'public hearing - ', 'edited entire', 'whole ', 'entire ', 'full ', 'special council '):
         if clip_title.startswith(keyword) or keyword + 'meeting' in clip_title:
             if 'minutes' in clip_title and 'audio' not in clip_title and 'sound' not in clip_title:
                 return False
