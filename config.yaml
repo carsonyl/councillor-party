@@ -14,7 +14,7 @@ youtube:
     - '{category}'
   tags: [surrey, bc, canada, city council meeting]
   privacy: public
-  notify_subscribers: false
+  notify_subscribers: true
 audio_mono: true
 ---
 id: poco
@@ -35,7 +35,7 @@ youtube:
     - '{start_ts:%Y} Burnaby BC City Council Meetings'
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public
-  notify_subscribers: false
+  notify_subscribers: true
 ---
 id: vancouver
 url: 'http://civic.neulion.com/cityofvancouver/'
@@ -55,7 +55,7 @@ youtube:
     - '{category}'
   tags: [vancouver, bc, canada, city council meeting]
   privacy: public
-  notify_subscribers: false
+  notify_subscribers: true
 ---
 id: coquitlam
 url: 'http://coquitlam.insinc.com'
@@ -75,7 +75,7 @@ youtube:
     - '{category}'
   tags: [coquitlam, bc, canada, city council meeting]
   privacy: unlisted
-  notify_subscribers: false
+  notify_subscribers: true
 #---
 #id: langley
 #url: 'http://civic.neulion.com/cityoflangley/'
