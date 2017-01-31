@@ -10,6 +10,7 @@ The following YouTube channels are automated using Councillor Party:
 * [Surrey BC City Council Meetings](https://www.youtube.com/channel/UCvDEI1KAPS5CjzDhsXa1jdw) (Granicus and Neulion)
 * [Burnaby BC City Council Meetings](https://www.youtube.com/channel/UCk7Xv8-7kPMzDrEEjJfU2Qw) (Neulion)
 * [Vancouver BC City Council Meetings](https://www.youtube.com/channel/UCAOvmwJyHEGhV_vUYv82HxA) (Neulion)
+* [Langley BC City Council Meetings](https://www.youtube.com/channel/UCdUnSBiupuVc5HynLUWWlxQ) (InsInc and Neulion)
 
 This project is maintained by [Carson Lam](https://www.carsonlam.ca) ([@carsonyl](https://twitter.com/carsonyl)).
 
@@ -58,3 +59,7 @@ In order to upload videos to YouTube, additional setup is needed:
 3. Run `councillor-party.py [config_id] youtube authorize`
    to grant access to the YouTube channel to receive uploaded videos.
    The credentials are saved under `auth/[config_id].token.json`.
+
+Due to various quirks and errors that may be present in meeting timecodes and clip names,
+this process sometimes requires babysitting. Temporary code changes or debugger interventions
+may be needed to correctly handle certain videos.

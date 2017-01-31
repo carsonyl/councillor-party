@@ -142,7 +142,7 @@ class NeulionScraperApi(VideoProvider):
         for tr in soup.find_all('tr'):
             a = tr.find('a')
             url = a['onclick']
-            url = url[url.find('adaptive://'):url.find('.mp4') + 4]
+            url = url[url.find('initClip(')+10:url.find('.mp4') + 4]
             hidden_vals = {}
             for inp in tr.find_all('input'):
                 hidden_vals[inp['name']] = inp['value']

@@ -31,6 +31,8 @@ youtube:
 
 
     {timecodes}
+  location: [49.243329, -122.972950]
+  location_desc: Burnaby City Hall, Burnaby, BC, Canada
   playlists:
     - '{start_ts:%Y} Burnaby BC City Council Meetings'
   tags: [burnaby, bc, canada, city council meeting]
@@ -74,8 +76,45 @@ youtube:
     - '{start_ts:%Y} Coquitlam BC City Council Meetings'
     - '{category}'
   tags: [coquitlam, bc, canada, city council meeting]
-  privacy: unlisted
+  privacy: public
   notify_subscribers: true
-#---
-#id: langley
-#url: 'http://civic.neulion.com/cityoflangley/'
+---
+id: langley-old
+url: 'http://cityoflangley.insinc.com'
+provider: insinc
+youtube:
+  title: 'Langley City Council Meeting, {start_ts:%Y-%m-%d}'
+  desc: >
+    Council Meeting on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}.
+    Langley City Council in British Columbia, Canada.
+
+
+    {timecodes}
+  location: [49.103762, -122.656968]
+  location_desc: Langley City Hall, Coquitlam, BC, Canada
+  playlists:
+    - '{start_ts:%Y} Langley City Council Meetings'
+  tags: [langley, bc, canada, city council meeting]
+  privacy: public
+  notify_subscribers: true
+---
+# City of Langley has only one meeting type (council meeting),
+# and Public Hearings are held within them.
+id: langley
+url: 'http://civic.neulion.com/cityoflangley/'
+provider: neulion
+youtube:
+  title: 'Langley City Council Meeting, {start_ts:%Y-%m-%d}'
+  desc: >
+    Council Meeting on {start_ts:%A, %B} {start_ts.day}, {start_ts:%Y}. {title}.
+    Langley City Council in British Columbia, Canada.
+
+
+    {timecodes}
+  location: [49.103762, -122.656968]
+  location_desc: Langley City Hall, Coquitlam, BC, Canada
+  playlists:
+    - '{start_ts:%Y} Langley City Council Meetings'
+  tags: [langley, bc, canada, city council meeting]
+  privacy: public
+  notify_subscribers: true

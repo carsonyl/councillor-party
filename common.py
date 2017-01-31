@@ -136,9 +136,13 @@ def is_root_clip(clip_title, also_allow_startswith=None):
     clip_title = clip_title.lower()
     if also_allow_startswith and clip_title.startswith(also_allow_startswith):
         return True
-    if clip_title in ('webcast unavailable', 'archive unavailable', 'inaugural council meeting', 'public hearing'):
+    if clip_title in ('webcast unavailable', 'archive unavailable', 'inaugural council meeting',
+                      ):
         return True
-    for keyword in ('regular council - ', 'regular council meeting', 'public hearing - ', 'edited entire', 'whole ', 'entire ', 'full ', 'special council '):
+    # This section often needs to be tweaked to handle creative variants of root clip names.
+    for keyword in ('regular council - ', 'regular council ',
+                    'complete council ', 'entire council ', 'inaugural council ',
+                    'edited entire', 'whole ', 'entire ', 'full ', 'special council '):
         if clip_title.startswith(keyword) or keyword + 'meeting' in clip_title:
             if 'minutes' in clip_title and 'audio' not in clip_title and 'sound' not in clip_title:
                 return False
@@ -149,6 +153,7 @@ def is_root_clip(clip_title, also_allow_startswith=None):
 def group_root_and_subclips(clips: List[VideoMetadata]):
     grouped = OrderedDict()
     current_root = None
+    # If video clips are ordered incorrectly, break here to reorder them before proceeding.
     for clip in clips:
         if is_root_clip(clip.title):
             current_root = clip

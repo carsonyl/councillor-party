@@ -62,6 +62,18 @@ class InsIncScraperApi(VideoProvider):
             clips = list(clips)
             if clips[0].title.startswith('Due to Technical Difficulties'):
                 continue
+            # Langley sometimes has meetings that don't have a clip encompassing the entire meeting.
+            # Create a dummy 'entire meeting' clip that does.
+            if not any(map(lambda x: is_root_clip(x.title), clips)):
+                fake_root = InsIncVideoClip(
+                    clips[0].category,
+                    'Entire Meeting',
+                    clips[0].mms_url,
+                    clips[0].for_date,
+                    min(map(lambda x: x.start_time, clips)),
+                    max(map(lambda x: x.start_time, clips)),
+                )
+                clips.insert(0, fake_root)
             for root, subclips in group_root_and_subclips(clips).items():
                 start_ts = pendulum.combine(root.for_date, pendulum.parse(root.start_time).time()).tz_(self.tz)
                 timecodes = [TimeCode(c.start_time, c.title, c.end_time) for c in subclips]
