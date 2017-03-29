@@ -1,9 +1,13 @@
 import json
 import os
 import shutil
+from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 from itertools import groupby
+
+import boto3
+from boto3.s3.transfer import S3Transfer
 from typing import Iterable
 
 import click
@@ -243,6 +247,57 @@ def upload(config, delete_after):
             for f in (metadata_path, video_path):
                 print("Deleting " + f)
                 os.remove(f)
+
+
+@cli.command(help='Upload videos to S3. AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env vars must be set.')
+@click.option('--delete-after', default=False)
+@click.pass_obj
+def s3(config, delete_after):
+    FileUpload = namedtuple('FileUpload', ['src_path', 's3_key'])
+    files_to_upload = []
+    if config['id'] == 'coquitlam':
+        # Upload unprocessed videos for Coquitlam.
+        download_dir = os.path.join(DOWNLOADS_DIR, config['id'])
+        for subdir in os.listdir(download_dir):
+            subdir = os.path.join(download_dir, subdir)
+            if not os.path.isdir(subdir):
+                continue
+
+            metadata_path = os.path.join(subdir, '_metadata.yaml')
+            metadata = prepped_video_info = yaml_load(metadata_path)
+            video_filename = os.path.basename(metadata.url)
+            video_path = os.path.join(subdir, video_filename)
+            s3_base_path = '{}/{}/'.format(config['id'], metadata.start_ts.split('-')[0])
+            if os.path.exists(video_path):
+                files_to_upload.extend([
+                    FileUpload(metadata_path, s3_base_path + video_filename + '.metadata.yaml'),
+                    FileUpload(video_path, s3_base_path + video_filename),
+                ])
+    else:
+        for metadata_filename in sorted(filter(lambda f: f.endswith('.yaml'), os.listdir(VIDEOS_DIR))):
+            metadata_path = os.path.join(VIDEOS_DIR, metadata_filename)
+            prepped_video_info = yaml_load(metadata_path)
+            if prepped_video_info.config_id != config['id']:
+                continue
+            video_path = os.path.join(VIDEOS_DIR, prepped_video_info.video_filename)
+            if not os.path.exists(video_path):
+                print(video_path + " doesn't exist")
+                continue
+
+            s3_base_path = '{}/{}/'.format(config['id'], prepped_video_info.video_metadata.clip_start_utc.split('-')[0])
+            files_to_upload.extend([
+                FileUpload(metadata_path, s3_base_path + metadata_filename),
+                FileUpload(video_path, s3_base_path + prepped_video_info.video_filename),
+            ])
+
+    client = S3Transfer(boto3.client('s3'))
+    bucket = config['s3_bucket']
+    for entry in files_to_upload:
+        print("Uploading {} to bucket {} at key {}".format(entry.src_path, bucket, entry.s3_key))
+        client.upload_file(entry.src_path, bucket, entry.s3_key)
+        if delete_after:
+            print("Deleting " + entry.src_path)
+            os.remove(entry.src_path)
 
 
 if __name__ == '__main__':

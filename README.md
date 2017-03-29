@@ -2,7 +2,7 @@ Councillor Party
 ================
 
 **Councillor Party** is a set of Python scripts for downloading city council videos hosted by various vendors,
-and then re-uploading them onto YouTube. Supported vendors include Neulion, InsInc, and Granicus.
+and then re-uploading them onto YouTube and S3. Supported vendors include Neulion, InsInc, and Granicus.
 
 The following YouTube channels are automated using Councillor Party:
 
@@ -49,7 +49,8 @@ The basic workflow for the download-transform-upload procedure is as follows:
 1. Download the metadata for a given date using `councillor-party.py [config_id] metadata [YYYY-MM-DD]`.
 2. Download the videos for a given date using `councillor-party.py [config_id] download [YYYY-MM-DD]`.
 3. Perform any required processing (concatenation, splicing, etc.) using `councillor-party.py [config_id] process`.
-4. Upload the process video, with assembled metadata, using `councillor-party.py [config_id] youtube upload`.
+4. Upload the processed video, with assembled metadata, using `councillor-party.py [config_id] youtube upload`.
+5. Upload to an Amazon S3 bucket for archival purposes, using `councillor-party.py [config_id] s3`.
 
 In order to upload videos to YouTube, additional setup is needed:
 

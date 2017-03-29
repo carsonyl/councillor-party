@@ -16,6 +16,7 @@ youtube:
   privacy: public
   notify_subscribers: true
 audio_mono: true
+s3_bucket: councillor-party
 ---
 id: poco
 url: 'https://portcoquitlam.ca.granicus.com/ViewPublisher.php?view_id=2'
@@ -38,6 +39,7 @@ youtube:
   tags: [burnaby, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: true
+s3_bucket: councillor-party
 ---
 id: vancouver
 url: 'http://civic.neulion.com/cityofvancouver/'
@@ -58,6 +60,7 @@ youtube:
   tags: [vancouver, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: true
+s3_bucket: councillor-party
 ---
 id: coquitlam
 url: 'http://coquitlam.insinc.com'
@@ -78,6 +81,7 @@ youtube:
   tags: [coquitlam, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: true
+s3_bucket: councillor-party
 ---
 id: langley-old
 url: 'http://cityoflangley.insinc.com'
@@ -118,3 +122,4 @@ youtube:
   tags: [langley, bc, canada, city council meeting]
   privacy: public
   notify_subscribers: true
+s3_bucket: councillor-party
