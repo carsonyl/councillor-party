@@ -264,10 +264,10 @@ def s3(config, delete_after):
                 continue
 
             metadata_path = os.path.join(subdir, '_metadata.yaml')
-            metadata = prepped_video_info = yaml_load(metadata_path)
-            video_filename = os.path.basename(metadata.url)
+            meta = yaml_load(metadata_path)[0]
+            video_filename = os.path.basename(meta.url)
             video_path = os.path.join(subdir, video_filename)
-            s3_base_path = '{}/{}/'.format(config['id'], metadata.start_ts.split('-')[0])
+            s3_base_path = '{}/{}/'.format(config['id'], meta.start_ts.split('-')[0])
             if os.path.exists(video_path):
                 files_to_upload.extend([
                     FileUpload(metadata_path, s3_base_path + video_filename + '.metadata.yaml'),
