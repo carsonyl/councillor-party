@@ -14,7 +14,7 @@ The following YouTube channels are automated using Councillor Party:
 
 This project is maintained by [Carson Lam](https://www.carsonlam.ca) ([@carsonyl](https://twitter.com/carsonyl)).
 
-The Git repository for this project is at https://github.com/rbcarson/councillor-party.
+The Git repository for this project is at https://github.com/carsonyl/councillor-party.
 
 Rationale
 ---------
